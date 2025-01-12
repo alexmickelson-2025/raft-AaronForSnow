@@ -13,4 +13,5 @@ namespace RaftTests
             Assert.Equal(ServerState.Follower, testServer.State);
         }
     }
+    // use NSubstitute to moq the other servers
 }
