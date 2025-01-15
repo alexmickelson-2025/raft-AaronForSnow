@@ -18,6 +18,7 @@ namespace RaftTests
         {
             var testServer = new Server();
             Thread.Sleep(350);
+            testServer.Kill();
             Assert.True(testServer.Sentmessages.Count() > 1);
         }
         //  3. When a new node is initialized, it should be in follower state.
@@ -25,7 +26,20 @@ namespace RaftTests
         public void ServerStartsInFollowerMode()
         {
             var testServer = new Server();
+            testServer.Kill();
             Assert.Equal(ServerState.Follower, testServer.State);
+        }
+        //  7. When a follower does get an AppendEntries message, it resets the election timer. (i.e.it doesn't start an election even after more than 300ms)
+        [Fact]
+        public void AppendEntriesResetsElectionTimer()
+        {
+            var testServer = new Server();
+            Thread.Sleep(30);
+            var timer = testServer.ElectionTimer;
+            testServer.AppendEntries();
+            var postTimer = testServer.ElectionTimer;
+            testServer.Kill();
+            Assert.True(timer > postTimer);
         }
         // 17. When a follower node receives an AppendEntries request, it sends a response.
         [Fact]
@@ -34,6 +48,7 @@ namespace RaftTests
             var testServer = new Server();
             testServer.State = ServerState.Follower;
             testServer.AppendEntries();
+            testServer.Kill();
             Assert.Contains("AppendReceived", testServer.Sentmessages);
         }
     }
