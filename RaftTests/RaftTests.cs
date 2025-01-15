@@ -18,7 +18,7 @@ public class RaftTests
     [Fact]
     public void LeaderSendsHeartBeats()
     {
-        var testServer = new Server();
+        var testServer = new ServerAaron();
         Thread.Sleep(350);
         testServer.Kill();
         Assert.True(testServer.Sentmessages.Count() > 1);
@@ -27,7 +27,7 @@ public class RaftTests
     [Fact]
     public void ServerStartsInFollowerMode()
     {
-        var testServer = new Server();
+        var testServer = new ServerAaron();
         testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
     }
@@ -35,7 +35,7 @@ public class RaftTests
     [Fact]
     public void AppendEntriesResetsElectionTimer()
     {
-        var testServer = new Server();
+        var testServer = new ServerAaron();
         Thread.Sleep(30);
         var timer = testServer.ElectionTimer;
         testServer.AppendEntries();
@@ -47,7 +47,7 @@ public class RaftTests
     [Fact]
     public void AppentEntriesRepliesWithSuccess()
     {
-        var testServer = new Server();
+        var testServer = new ServerAaron();
         testServer.State = ServerState.Follower;
         testServer.AppendEntries();
         testServer.Kill();

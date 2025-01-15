@@ -1,15 +1,16 @@
 ﻿namespace RaftClassLib;
 
-public class Server
+public class ServerAaron : IServerAaron
 {
-    public ServerState State;
-    public List<string> Sentmessages = new List<string>();
-    public int ElectionTimer;
-    public bool IsLive;
+    public ServerState State { get; set; }
+    public List<string> Sentmessages { get; set; }
+    public int ElectionTimer { get; set; }
+    public bool IsLive { get; set; }
     private Thread timer;
-    public Server()
+    public ServerAaron()
     {
         State = ServerState.Follower;
+        Sentmessages = new List<string>();
         IsLive = true;
         timer = new Thread(advancetimer);
         timer.Start();

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaftClassLib", "RaftClassLi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaftTests", "RaftTests\RaftTests.csproj", "{58ECB088-8906-4D5F-9FCF-08BB5AF5C6B4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSimUserInterface", "WebSimUserInterface\WebSimUserInterface.csproj", "{FD8C7E93-A52B-4BBC-8E27-46C6E1334DF3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{58ECB088-8906-4D5F-9FCF-08BB5AF5C6B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58ECB088-8906-4D5F-9FCF-08BB5AF5C6B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58ECB088-8906-4D5F-9FCF-08BB5AF5C6B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD8C7E93-A52B-4BBC-8E27-46C6E1334DF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD8C7E93-A52B-4BBC-8E27-46C6E1334DF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD8C7E93-A52B-4BBC-8E27-46C6E1334DF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD8C7E93-A52B-4BBC-8E27-46C6E1334DF3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
