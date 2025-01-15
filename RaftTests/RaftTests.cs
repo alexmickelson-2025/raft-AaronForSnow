@@ -32,6 +32,7 @@ namespace RaftTests
         public void AppentEntriesRepliesWithSuccess()
         {
             var testServer = new Server();
+            testServer.State = ServerState.Follower;
             testServer.AppendEntries();
             Assert.Contains("AppendReceived", testServer.Sentmessages);
         }
