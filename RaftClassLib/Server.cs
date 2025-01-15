@@ -13,14 +13,18 @@ public class Server
     }
     public void AppendEntries()
     {
-        Sentmessages.Add("AppendReceived");
+        Respond("AppendReceived");
+    }
+    private void Respond(string message)
+    {
+        Sentmessages.Add(message);
     }
     private void CheckMessages()
     {
         while (IsLive)
         {
             Thread.Sleep(100);
-            Sentmessages.Add("HB");
+            Respond("HB");
             if (Sentmessages.Count > 2)
             {
                 IsLive = false;
