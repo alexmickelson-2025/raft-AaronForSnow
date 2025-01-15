@@ -17,7 +17,6 @@ namespace RaftTests
         public void LeaderSendsHeartBeats()
         {
             var testServer = new Server();
-            Assert.Equal(ServerState.Follower, testServer.State);
             Thread.Sleep(350);
             Assert.True(testServer.Sentmessages.Count() > 1);
         }
@@ -27,6 +26,14 @@ namespace RaftTests
         {
             var testServer = new Server();
             Assert.Equal(ServerState.Follower, testServer.State);
+        }
+        // 17. When a follower node receives an AppendEntries request, it sends a response.
+        [Fact]
+        public void AppentEntriesRepliesWithSuccess()
+        {
+            var testServer = new Server();
+            testServer.AppendEntries();
+            Assert.Contains("AppendReceived", testServer.Sentmessages);
         }
     }
     // use NSubstitute to moq the other servers

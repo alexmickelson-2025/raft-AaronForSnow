@@ -11,6 +11,10 @@ public class Server
         IsLive = true;
         CheckMessages();
     }
+    public void AppendEntries()
+    {
+        Sentmessages.Add("AppendReceived");
+    }
     private void CheckMessages()
     {
         while (IsLive)
