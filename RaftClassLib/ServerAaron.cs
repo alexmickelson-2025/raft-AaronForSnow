@@ -43,7 +43,7 @@ public class ServerAaron : IServerAaron
         HBTimer.Start();
     }
 
-    private void sendHeartBeet(object? sender, ElapsedEventArgs e)
+    private void sendHeartBeet(object? sender, ElapsedEventArgs? e)
     {
         if(State == ServerState.Leader)
         {
@@ -66,6 +66,7 @@ public class ServerAaron : IServerAaron
         if (positiveVotes() > NumServers / 2)
         {
             State = ServerState.Leader;
+            sendHeartBeet(null, null);
         }
     }
 

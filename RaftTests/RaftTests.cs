@@ -89,7 +89,6 @@ public class RaftTests
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 2);
         Thread.Sleep(100);
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 3);
-        testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
     }
     //  8. Given an election begins, when the candidate gets a majority of votes, it becomes a leader. (think of the easy case; can use two tests for single and multi-node clusters)
@@ -192,12 +191,12 @@ public class RaftTests
     public void ElectionTimerExpiresInsideElectionStartsNewElection()
     {
         var testServer = new ServerAaron(1, 3);
-        Thread.Sleep(350);
+        Thread.Sleep(310);
         Assert.Equal(ServerState.Candidate, testServer.State);
         Assert.Contains("Election Request", testServer.Sentmessages);
         testServer.Sentmessages.Remove("Election Request");
         Assert.DoesNotContain("Election Request", testServer.Sentmessages);
-        Thread.Sleep(350);
+        Thread.Sleep(310);
         Assert.Equal(ServerState.Candidate, testServer.State);
         Assert.Contains("Election Request", testServer.Sentmessages);
         testServer.Kill();
@@ -226,7 +225,16 @@ public class RaftTests
         Assert.Equal(3, testServer.LeaderId);
         Assert.Contains("Leader is 3", testServer.Sentmessages); // act of rejecting
     }
-
+    // 19. When a candidate wins an election, it immediately sends a heart beat.
+    [Fact]
+    public void WhenCadidateBecomdesLeaderImmediateSendHeartBeet()
+    {
+        var testServer = new ServerAaron(1, 3);
+        Thread.Sleep(350);
+        testServer.ReciveVote(senderID: 3, true);
+        Assert.Equal(ServerState.Leader, testServer.State);
+        Assert.Contains("HB",testServer.Sentmessages);
+    }
 }
 // use NSubstitute to moq the other servers
 //  1. When a leader is active it sends a heart beat within 50ms.
