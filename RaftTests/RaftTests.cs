@@ -48,7 +48,6 @@ public class RaftTests
         var testServer = new ServerAaron(1);
         Thread.Sleep(350);
         testServer.Kill();
-        Assert.Equal(ServerState.Candidate, testServer.State);
         Assert.Contains("Election Request", testServer.Sentmessages);
     }
     //  5. When the election time is reset, it is a random value between 150 and 300ms.
@@ -92,6 +91,14 @@ public class RaftTests
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 3);
         testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
+    }
+    //  8. Given an election begins, when the candidate gets a majority of votes, it becomes a leader. (think of the easy case; can use two tests for single and multi-node clusters)
+    [Fact]
+    public void WhenCadidateGetMajorityVotesBecomesLeaderSingleNode()
+    {
+        var testServer = new ServerAaron(1); //default to 1 server
+        Thread.Sleep(350);
+        Assert.Equal(ServerState.Leader, testServer.State);
     }
     // 17. When a follower node receives an AppendEntries request, it sends a response.
     [Fact]

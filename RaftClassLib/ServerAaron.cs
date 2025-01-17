@@ -11,12 +11,15 @@ public class ServerAaron : IServerAaron
     public int LeaderId { get; set; }
     public int ID {  get; set; }
     public int Term { get; set; }
+    private int NumServers { get; set; }
+    private List<Vote> Votes { get; set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
-    public ServerAaron(int id)
+    public ServerAaron(int id, int? numServers = 1)
 #pragma warning restore CS8618
     {
         this.ID = id;
+        this.NumServers = numServers ?? 1;
         State = ServerState.Follower;
         Sentmessages = new List<string>();
         startTimers();
@@ -47,11 +50,27 @@ public class ServerAaron : IServerAaron
 
     private void StartElection(object? sender, ElapsedEventArgs? e)
     {
+        
         State = ServerState.Candidate;
         Term += Term;
         Respond("Election Request");
+        Votes = new List<Vote>() { new Vote(1, true) };
+        if (positiveVotes() > NumServers / 2)
+        {
+            State = ServerState.Leader;
+        }
     }
-
+    private int positiveVotes()
+    {
+        int count = 0;
+        foreach (var vote in Votes)
+        {
+            if (vote.PositiveVote) {
+                count++;
+            }
+        }
+        return count;
+    }
     private void Respond(string message)
     {
         Sentmessages.Add(message);
@@ -75,4 +94,14 @@ public enum ServerState
     Follower,
     Candidate,
     Leader
+}
+public class Vote
+{
+    public int VoterId { get; set; }
+    public bool PositiveVote { get; set; }
+    public Vote(int voterId, bool positiveVote)
+    {
+        VoterId = voterId;
+        PositiveVote = positiveVote;    
+    }
 }
