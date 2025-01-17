@@ -12,5 +12,17 @@
         public int LeaderId { get; set;}
         public int ID { get; set; }
         public int Term { get; set; }
+        void RequestVote(int requesterId, int term);
+        public List<TermVote> TermVotes { get; set; }
+    }
+    public class TermVote
+    {
+        public readonly int RequesterId;
+        public readonly int Term;
+        public TermVote(int requesterId, int term)
+        {
+            RequesterId = requesterId;
+            Term = term;
+        }
     }
 }

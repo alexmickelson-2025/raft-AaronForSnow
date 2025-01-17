@@ -100,6 +100,33 @@ public class RaftTests
         Thread.Sleep(350);
         Assert.Equal(ServerState.Leader, testServer.State);
     }
+    //  9. Given a candidate receives a majority of votes while waiting for unresponsive node, it still becomes a leader.
+    [Fact]
+    public void WhenCadidateGetMajorityVotesBecomesLeaderThreeNodes()
+    {
+        var testServer = new ServerAaron(1, 3);
+        Thread.Sleep(350);
+        testServer.ReciveVote(senderID: 3, true);
+        Assert.Equal(ServerState.Leader, testServer.State);
+    }
+    // -9. A follower that has not voted and is in a later term than the candidate responds to a RequestForVoteRPC with no. (inverse of 9)
+    [Fact]
+    public void WhenCadidateDOESNOTGetMajorityVotesWILLNOTBecomesLeaderThreeNodes()
+    {
+        var testServer = new ServerAaron(1,3);
+        Thread.Sleep(350);
+        Assert.Equal(ServerState.Candidate, testServer.State);
+    }
+    // 10. A follower that has not voted and is in an earlier term responds to a RequestForVoteRPC with yes. (the reply will be a separate RPC)
+    [Fact]
+    public void WhenFolloewerAskedForVoteGetPositiveResponce()
+    {
+        var testServer = new ServerAaron(1, 3);
+        testServer.RequestVote(2,2); // id, term
+        Assert.Equal(ServerState.Follower, testServer.State);
+        Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
+        Assert.Contains("Positive Vote", testServer.Sentmessages);
+    }
     // 17. When a follower node receives an AppendEntries request, it sends a response.
     [Fact]
     public void AppentEntriesRepliesWithSuccess()

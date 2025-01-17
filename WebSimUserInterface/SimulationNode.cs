@@ -17,6 +17,7 @@ public class SimulationNode : IServerAaron
     public System.Timers.Timer ElectionTimer { get => ((IServerAaron)InnerNode).ElectionTimer; set => ((IServerAaron)InnerNode).ElectionTimer = value; }
     public int ID { get => ((IServerAaron)InnerNode).ID; set => ((IServerAaron)InnerNode).ID = value; }
     public int Term { get => ((IServerAaron)InnerNode).Term; set => ((IServerAaron)InnerNode).Term = value; }
+    public List<TermVote> TermVotes { get => ((IServerAaron)InnerNode).TermVotes; set => ((IServerAaron)InnerNode).TermVotes = value; }
 
     public void AppendEntries(int senderID, string entry, int term)
     {
@@ -26,5 +27,10 @@ public class SimulationNode : IServerAaron
     public void Kill()
     {
         InnerNode.Kill();
+    }
+
+    public void RequestVote(int requesterId, int term)
+    {
+        ((IServerAaron)InnerNode).RequestVote(requesterId, term);
     }
 }
