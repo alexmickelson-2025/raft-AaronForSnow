@@ -23,6 +23,15 @@ public class RaftTests
         testServer.Kill();
         Assert.True(testServer.Sentmessages.Count() > 1);
     }
+    //  2. When a node receives an AppendEntries from another node, then first node remembers that other node is the current leader.
+    [Fact]
+    public void AppendEntriesWillSetLeader()
+    {
+        var testServer = new ServerAaron();
+        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
+        testServer.Kill();
+        Assert.Equal(2, testServer.LeaderId);
+    }
     //  3. When a new node is initialized, it should be in follower state.
     [Fact]
     public void ServerStartsInFollowerMode()
@@ -38,7 +47,7 @@ public class RaftTests
         var testServer = new ServerAaron();
         Thread.Sleep(30);
         var timer = testServer.ElectionTimer;
-        testServer.AppendEntries();
+        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
         var postTimer = testServer.ElectionTimer;
         testServer.Kill();
         Assert.True(timer > postTimer);
@@ -49,7 +58,7 @@ public class RaftTests
     {
         var testServer = new ServerAaron();
         testServer.State = ServerState.Follower;
-        testServer.AppendEntries();
+        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
         testServer.Kill();
         Assert.Contains("AppendReceived", testServer.Sentmessages);
     }
