@@ -18,6 +18,7 @@ public class SimulationNode : IServerAaron
     public int ID { get => ((IServerAaron)InnerNode).ID; set => ((IServerAaron)InnerNode).ID = value; }
     public int Term { get => ((IServerAaron)InnerNode).Term; set => ((IServerAaron)InnerNode).Term = value; }
     public List<TermVote> TermVotes { get => ((IServerAaron)InnerNode).TermVotes; set => ((IServerAaron)InnerNode).TermVotes = value; }
+    public List<Vote> Votes { get => ((IServerAaron)InnerNode).Votes; set => ((IServerAaron)InnerNode).Votes = value; }
 
     public void AppendEntries(int senderID, string entry, int term)
     {
@@ -27,6 +28,11 @@ public class SimulationNode : IServerAaron
     public void Kill()
     {
         InnerNode.Kill();
+    }
+
+    public void ReciveVote(int senderID, bool v)
+    {
+        ((IServerAaron)InnerNode).ReciveVote(senderID, v);
     }
 
     public void RequestVote(int requesterId, int term)

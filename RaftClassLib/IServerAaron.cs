@@ -13,7 +13,10 @@
         public int ID { get; set; }
         public int Term { get; set; }
         void RequestVote(int requesterId, int term);
+        void ReciveVote(int senderID, bool v);
+
         public List<TermVote> TermVotes { get; set; }
+        public List<Vote> Votes { get; set; }
     }
     public class TermVote
     {
