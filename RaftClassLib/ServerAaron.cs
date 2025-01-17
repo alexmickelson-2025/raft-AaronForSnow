@@ -21,6 +21,7 @@ public class ServerAaron : IServerAaron
     {
         this.ID = id;
         this.NumServers = numServers ?? 1;
+        this.Term = 1;
         TermVotes = new List<TermVote>();
         State = ServerState.Follower;
         Sentmessages = new List<string>();
@@ -90,10 +91,14 @@ public class ServerAaron : IServerAaron
 
     public void AppendEntries(int senderID, string entry, int term)
     {
-        LeaderId = senderID;
-        Respond("AppendReceived");
-        ElectionTimer.Stop();
-        ElectionTimer.Start();
+        if (term > Term)
+        {
+            LeaderId = senderID;
+            State = ServerState.Follower;
+            Respond("AppendReceived");
+            ElectionTimer.Stop();
+            ElectionTimer.Start();
+        }
     }
 
     public void ReciveVote(int senderID, bool positveVote)

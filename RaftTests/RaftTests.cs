@@ -28,8 +28,8 @@ public class RaftTests
     [Fact]
     public void AppendEntriesWillSetLeader()
     {
-        var testServer = new ServerAaron(1);
-        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
+        var testServer = new ServerAaron(1,3);
+        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 3);
         testServer.Kill();
         Assert.Equal(2, testServer.LeaderId);
     }
@@ -135,13 +135,25 @@ public class RaftTests
         Thread.Sleep(350);
         Assert.Equal(1,testServer.Votes.First().VoterId);
     }
+    // 12. Given a candidate, when it receives an AppendEntries message from a node with a later term, then candidate loses and becomes a follower.
+    [Fact]
+    public void AppendEntriesWillSetLeaderFromCadidateState()
+    {
+        var testServer = new ServerAaron(1,3);
+        Thread.Sleep(350);
+        Assert.Equal(ServerState.Candidate, testServer.State);
+        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 3);
+        testServer.Kill();
+        Assert.Equal(ServerState.Follower, testServer.State);
+        Assert.Equal(2, testServer.LeaderId);
+    }
     // 17. When a follower node receives an AppendEntries request, it sends a response.
     [Fact]
     public void AppentEntriesRepliesWithSuccess()
     {
-        var testServer = new ServerAaron(1);
+        var testServer = new ServerAaron(1,3);
         testServer.State = ServerState.Follower;
-        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
+        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 3);
         testServer.Kill();
         Assert.Contains("AppendReceived", testServer.Sentmessages);
     }
