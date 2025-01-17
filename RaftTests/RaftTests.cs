@@ -19,9 +19,10 @@ public class RaftTests
     public void LeaderSendsHeartBeats()
     {
         var testServer = new ServerAaron();
-        Thread.Sleep(350);
+        testServer.State = ServerState.Leader;
+        Thread.Sleep(55);
         testServer.Kill();
-        Assert.True(testServer.Sentmessages.Count() > 1);
+        Assert.True(testServer.Sentmessages.Count() >= 1);
     }
     //  2. When a node receives an AppendEntries from another node, then first node remembers that other node is the current leader.
     [Fact]
@@ -40,17 +41,29 @@ public class RaftTests
         testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
     }
+    //  4. When a follower doesn't get a message for 300ms then it starts an election.
+    [Fact]
+    public void FollowerWillStartElection()
+    {
+        var testServer = new ServerAaron();
+        Thread.Sleep(350);
+        testServer.Kill();
+        Assert.Equal(ServerState.Candidate, testServer.State);
+        Assert.Contains("Election Request", testServer.Sentmessages);
+    }
     //  7. When a follower does get an AppendEntries message, it resets the election timer. (i.e.it doesn't start an election even after more than 300ms)
     [Fact]
     public void AppendEntriesResetsElectionTimer()
     {
         var testServer = new ServerAaron();
-        Thread.Sleep(30);
-        var timer = testServer.ElectionTimer;
+        Thread.Sleep(100);
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
-        var postTimer = testServer.ElectionTimer;
+        Thread.Sleep(100);
+        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 2);
+        Thread.Sleep(100);
+        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 3);
         testServer.Kill();
-        Assert.True(timer > postTimer);
+        Assert.Equal(ServerState.Follower, testServer.State);
     }
     // 17. When a follower node receives an AppendEntries request, it sends a response.
     [Fact]

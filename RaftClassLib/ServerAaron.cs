@@ -1,70 +1,64 @@
 ﻿
 namespace RaftClassLib;
-
+using System.Timers;
 public class ServerAaron : IServerAaron
 {
     public ServerState State { get; set; }
     public List<string> Sentmessages { get; set; }
-    public int ElectionTimer { get; set; }
+    public System.Timers.Timer ElectionTimer { get; set; }
+    public System.Timers.Timer HBTimer { get; set; }
     public bool IsLive { get; set; }
     public int LeaderId { get; set; }
-
-    private Thread timer;
     public ServerAaron()
     {
         State = ServerState.Follower;
         Sentmessages = new List<string>();
         IsLive = true;
-        timer = new Thread(advancetimer);
-        timer.Start();
-        CheckMessages();
+        ElectionTimer = new Timer(300);
+        ElectionTimer.Elapsed += StartElection;
+        ElectionTimer.AutoReset = true;
+        ElectionTimer.Start();
+        HBTimer = new Timer(50);
+        HBTimer.Elapsed += sendHeartBeet;
+        HBTimer.AutoReset = true;
+        HBTimer.Start();
     }
-    private void advancetimer()
+
+    private void sendHeartBeet(object? sender, ElapsedEventArgs e)
     {
-        while (IsLive)
+        if(State == ServerState.Leader)
         {
-            ElectionTimer += 10;
-            Thread.Sleep(10);
+            Respond("HB");
         }
+    }
+
+    private void StartElection(object? sender, ElapsedEventArgs? e)
+    {
+        State = ServerState.Candidate;
+        Respond("Election Request");
     }
 
     private void Respond(string message)
     {
         Sentmessages.Add(message);
     }
-    private void CheckMessages()
-    {
-        while (IsLive)
-        {
-            Thread.Sleep(100);
-            Respond("HB");
-            if (Sentmessages.Count > 2)
-            {
-                IsLive = false;
-            }
-        }
-    }
     public void Kill()
     {
         IsLive = false;
-        timer.Join();
     }
 
     public void AppendEntries(int senderID, string entry, int term)
     {
         LeaderId = senderID;
         Respond("AppendReceived");
-        ElectionTimer = 0;
+        ElectionTimer.Stop();
+        ElectionTimer.Start();
     }
 
-    public void AppendEntries()
-    {
-        throw new NotImplementedException();
-    }
 }
 public enum ServerState
 {
     Follower,
-    Candadate,
+    Candidate,
     Leader
 }
