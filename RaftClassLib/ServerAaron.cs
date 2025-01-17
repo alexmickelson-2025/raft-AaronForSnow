@@ -12,7 +12,7 @@ public class ServerAaron : IServerAaron
     public int ID {  get; set; }
     public int Term { get; set; }
     private int NumServers { get; set; }
-    private List<Vote> Votes { get; set; }
+    public List<Vote> Votes { get; set; }
     public List<TermVote> TermVotes { get; set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor

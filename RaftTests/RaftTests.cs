@@ -127,6 +127,14 @@ public class RaftTests
         Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
         Assert.Contains("Positive Vote", testServer.Sentmessages);
     }
+    // 11. Given a candidate server that just became a candidate, it votes for itself.
+    [Fact]
+    public void WhenBecomesCadidateVotesForSelf()
+    {
+        var testServer = new ServerAaron(1);
+        Thread.Sleep(350);
+        Assert.Equal(1,testServer.Votes.First().VoterId);
+    }
     // 17. When a follower node receives an AppendEntries request, it sends a response.
     [Fact]
     public void AppentEntriesRepliesWithSuccess()
