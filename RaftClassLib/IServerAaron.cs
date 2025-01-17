@@ -10,5 +10,7 @@
         public Timer ElectionTimer { get; set;}
         public bool IsLive { get; set;}
         public int LeaderId { get; set;}
+        public int ID { get; set; }
+        public int Term { get; set; }
     }
 }

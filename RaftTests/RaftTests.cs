@@ -18,7 +18,7 @@ public class RaftTests
     [Fact]
     public void LeaderSendsHeartBeats()
     {
-        var testServer = new ServerAaron();
+        var testServer = new ServerAaron(1);
         testServer.State = ServerState.Leader;
         Thread.Sleep(65);
         testServer.Kill();
@@ -28,7 +28,7 @@ public class RaftTests
     [Fact]
     public void AppendEntriesWillSetLeader()
     {
-        var testServer = new ServerAaron();
+        var testServer = new ServerAaron(1);
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
         testServer.Kill();
         Assert.Equal(2, testServer.LeaderId);
@@ -37,7 +37,7 @@ public class RaftTests
     [Fact]
     public void ServerStartsInFollowerMode()
     {
-        var testServer = new ServerAaron();
+        var testServer = new ServerAaron(1);
         testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
     }
@@ -45,7 +45,7 @@ public class RaftTests
     [Fact]
     public void FollowerWillStartElection()
     {
-        var testServer = new ServerAaron();
+        var testServer = new ServerAaron(1);
         Thread.Sleep(350);
         testServer.Kill();
         Assert.Equal(ServerState.Candidate, testServer.State);
@@ -57,7 +57,7 @@ public class RaftTests
     {
         List<double> t = new List<double>();
         for (int i = 0; i < 4; i++) {
-            var testServer = new ServerAaron();
+            var testServer = new ServerAaron(1);
             testServer.Kill();
             Assert.True(testServer.ElectionTimer.Interval >= 150);
             Assert.True(testServer.ElectionTimer.Interval <= 300);
@@ -65,11 +65,25 @@ public class RaftTests
         }
         Assert.False((t[0] == t[1]) && (t[0] == t[2]) && (t[0] == t[3]) && (t[1] == t[2]) && (t[1] == t[3]) && (t[2] == t[3]));
     }
+    //  6. When a new election begins, the term is incremented by 1.
+    //    * Create a new node, store id in variable.
+    //    * wait 300 ms
+    //    * reread term(?)
+    //    * assert after is greater(by at least 1)
+    [Fact]
+    public void ElectionWillBeginsWithHigherTerm()
+    {
+        var testServer = new ServerAaron(1);
+        testServer.Term = 1;
+        Thread.Sleep(350);
+        testServer.Kill();
+        Assert.True(testServer.Term > 1);
+    }
     //  7. When a follower does get an AppendEntries message, it resets the election timer. (i.e.it doesn't start an election even after more than 300ms)
     [Fact]
     public void AppendEntriesResetsElectionTimer()
     {
-        var testServer = new ServerAaron();
+        var testServer = new ServerAaron(1);
         Thread.Sleep(100);
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
         Thread.Sleep(100);
@@ -83,7 +97,7 @@ public class RaftTests
     [Fact]
     public void AppentEntriesRepliesWithSuccess()
     {
-        var testServer = new ServerAaron();
+        var testServer = new ServerAaron(1);
         testServer.State = ServerState.Follower;
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
         testServer.Kill();
