@@ -172,6 +172,21 @@ public class RaftTests
         Assert.Contains("Positive Vote", testServer.Sentmessages);
         Assert.Contains("Rejected Vote", testServer.Sentmessages);
     }
+    // 15. If a node receives a second request for vote for a future term, it should vote for that node.
+    [Fact]
+    public void WhenFolloewerAskedForVoteSameTermAgainVoteAgain()
+    {
+        var testServer = new ServerAaron(1, 3);
+        testServer.RequestVote(2, 2); // id, term
+        testServer.RequestVote(2, 2); // id, term
+        Assert.Equal(ServerState.Follower, testServer.State);
+        Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
+        Assert.Contains("Positive Vote", testServer.Sentmessages);
+        testServer.Sentmessages.Remove("Positive Vote");
+        Assert.Contains("Positive Vote", testServer.Sentmessages);
+        testServer.Sentmessages.Remove("Positive Vote");
+        Assert.DoesNotContain("Positive Vote", testServer.Sentmessages);
+    }
     // 17. When a follower node receives an AppendEntries request, it sends a response.
     [Fact]
     public void AppentEntriesRepliesWithSuccess()
