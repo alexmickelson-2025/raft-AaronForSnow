@@ -187,6 +187,22 @@ public class RaftTests
         testServer.Sentmessages.Remove("Positive Vote");
         Assert.DoesNotContain("Positive Vote", testServer.Sentmessages);
     }
+    // 16. Given a candidate, when an election timer expires inside of an election, a new election is started.
+    [Fact]
+    public void ElectionTimerExpiresInsideElectionStartsNewElection()
+    {
+        var testServer = new ServerAaron(1, 3);
+        Thread.Sleep(350);
+        Assert.Equal(ServerState.Candidate, testServer.State);
+        Assert.Contains("Election Request", testServer.Sentmessages);
+        testServer.Sentmessages.Remove("Election Request");
+        Assert.DoesNotContain("Election Request", testServer.Sentmessages);
+        Thread.Sleep(350);
+        Assert.Equal(ServerState.Candidate, testServer.State);
+        Assert.Contains("Election Request", testServer.Sentmessages);
+        testServer.Kill();
+
+    }
     // 17. When a follower node receives an AppendEntries request, it sends a response.
     [Fact]
     public void AppentEntriesRepliesWithSuccess()
