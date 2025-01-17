@@ -91,7 +91,7 @@ public class ServerAaron : IServerAaron
 
     public void AppendEntries(int senderID, string entry, int term)
     {
-        if (term > Term)
+        if (term >= Term)
         {
             LeaderId = senderID;
             State = ServerState.Follower;

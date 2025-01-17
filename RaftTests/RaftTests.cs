@@ -82,7 +82,7 @@ public class RaftTests
     [Fact]
     public void AppendEntriesResetsElectionTimer()
     {
-        var testServer = new ServerAaron(1);
+        var testServer = new ServerAaron(1, 3);
         Thread.Sleep(100);
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
         Thread.Sleep(100);
@@ -137,12 +137,25 @@ public class RaftTests
     }
     // 12. Given a candidate, when it receives an AppendEntries message from a node with a later term, then candidate loses and becomes a follower.
     [Fact]
-    public void AppendEntriesWillSetLeaderFromCadidateState()
+    public void AppendEntriesWillSetLeaderFromCadidateStateHigerTerms()
     {
         var testServer = new ServerAaron(1,3);
         Thread.Sleep(350);
         Assert.Equal(ServerState.Candidate, testServer.State);
-        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 3);
+        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 30);
+        testServer.Kill();
+        Assert.Equal(ServerState.Follower, testServer.State);
+        Assert.Equal(2, testServer.LeaderId);
+    }
+    // 13. Given a candidate, when it receives an AppendEntries message from a node with an equal term, then candidate loses and becomes a follower.
+    [Fact]
+    public void AppendEntriesWillSetLeaderFromCadidateStateEqualTerms()
+    {
+        var testServer = new ServerAaron(1, 3);
+        Thread.Sleep(350);
+        Assert.Equal(ServerState.Candidate, testServer.State);
+        testServer.Term = 2; //should already be, but just in case
+        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 2);
         testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.LeaderId);
