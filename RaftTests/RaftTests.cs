@@ -160,6 +160,18 @@ public class RaftTests
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.LeaderId);
     }
+    // 14. If a node receives a second request for vote for the same term, it should respond no. (again, separate RPC for response)
+    [Fact]
+    public void WhenFolloewerAskedForVoteSameTermForAnotherSendNegativeResponce()
+    {
+        var testServer = new ServerAaron(1, 3);
+        testServer.RequestVote(2, 2); // id, term
+        testServer.RequestVote(3, 2); // id, term
+        Assert.Equal(ServerState.Follower, testServer.State);
+        Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
+        Assert.Contains("Positive Vote", testServer.Sentmessages);
+        Assert.Contains("Rejected Vote", testServer.Sentmessages);
+    }
     // 17. When a follower node receives an AppendEntries request, it sends a response.
     [Fact]
     public void AppentEntriesRepliesWithSuccess()

@@ -109,8 +109,21 @@ public class ServerAaron : IServerAaron
 
     public void RequestVote(int requesterId, int term)
     {
-        TermVotes.Add(new TermVote(requesterId, term));
-        Respond("Positive Vote");
+        int termVotedId = TermVotes.FirstOrDefault(t => t.Term == term)?.RequesterId ?? 0;
+
+        if (termVotedId == requesterId)
+        {
+            Respond("Positive Vote");
+        }
+        else if (termVotedId != requesterId && termVotedId != 0)
+        {
+            Respond("Rejected Vote");
+        }
+        else // no votes for that term yet
+        {
+            TermVotes.Add(new TermVote(requesterId, term));
+            Respond("Positive Vote");
+        }
     }
 }
 public enum ServerState
