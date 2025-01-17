@@ -20,7 +20,7 @@ public class RaftTests
     {
         var testServer = new ServerAaron();
         testServer.State = ServerState.Leader;
-        Thread.Sleep(55);
+        Thread.Sleep(65);
         testServer.Kill();
         Assert.True(testServer.Sentmessages.Count() >= 1);
     }
@@ -50,6 +50,20 @@ public class RaftTests
         testServer.Kill();
         Assert.Equal(ServerState.Candidate, testServer.State);
         Assert.Contains("Election Request", testServer.Sentmessages);
+    }
+    //  5. When the election time is reset, it is a random value between 150 and 300ms.
+    [Fact]
+    public void ElectionTimeoutIsRandom()
+    {
+        List<double> t = new List<double>();
+        for (int i = 0; i < 4; i++) {
+            var testServer = new ServerAaron();
+            testServer.Kill();
+            Assert.True(testServer.ElectionTimer.Interval >= 150);
+            Assert.True(testServer.ElectionTimer.Interval <= 300);
+            t.Add(testServer.ElectionTimer.Interval);
+        }
+        Assert.False((t[0] == t[1]) && (t[0] == t[2]) && (t[0] == t[3]) && (t[1] == t[2]) && (t[1] == t[3]) && (t[2] == t[3]));
     }
     //  7. When a follower does get an AppendEntries message, it resets the election timer. (i.e.it doesn't start an election even after more than 300ms)
     [Fact]

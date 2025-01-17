@@ -9,12 +9,21 @@ public class ServerAaron : IServerAaron
     public System.Timers.Timer HBTimer { get; set; }
     public bool IsLive { get; set; }
     public int LeaderId { get; set; }
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
     public ServerAaron()
+#pragma warning restore CS8618
     {
         State = ServerState.Follower;
         Sentmessages = new List<string>();
+        startTimers();
         IsLive = true;
-        ElectionTimer = new Timer(300);
+    }
+
+    private void startTimers()
+    {
+        Random random = new Random();
+        int interval = random.Next(150, 300);
+        ElectionTimer = new Timer(interval);
         ElectionTimer.Elapsed += StartElection;
         ElectionTimer.AutoReset = true;
         ElectionTimer.Start();
