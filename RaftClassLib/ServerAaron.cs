@@ -99,6 +99,10 @@ public class ServerAaron : IServerAaron
             ElectionTimer.Stop();
             ElectionTimer.Start();
         }
+        else
+        {
+            Respond($"Leader is {LeaderId}");
+        }
     }
 
     public void ReciveVote(int senderID, bool positveVote)

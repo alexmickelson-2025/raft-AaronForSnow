@@ -213,6 +213,19 @@ public class RaftTests
         testServer.Kill();
         Assert.Contains("AppendReceived", testServer.Sentmessages);
     }
+    // 18. Given a candidate receives an AppendEntries from a previous term, then rejects.
+    [Fact]
+    public void AppendEntriesWithLowerTermIsRejected()
+    {
+        var testServer = new ServerAaron(1, 3);
+        testServer.LeaderId = 3;
+        testServer.Term = 4;
+        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
+        testServer.Kill();
+        Assert.Equal(ServerState.Follower, testServer.State);
+        Assert.Equal(3, testServer.LeaderId);
+        Assert.Contains("Leader is 3", testServer.Sentmessages); // act of rejecting
+    }
 
 }
 // use NSubstitute to moq the other servers
