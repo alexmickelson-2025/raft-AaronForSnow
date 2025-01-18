@@ -11,22 +11,23 @@ public class ServerAaron : IServerAaron
     public int LeaderId { get; set; }
     public int ID {  get; set; }
     public int Term { get; set; }
-    private int NumServers { get; set; }
+    private int NumServers { get => OtherServers.Count + 1; }
     public List<Vote> Votes { get; set; }
     public List<TermVote> TermVotes { get; set; }
+    public List<IServerAaron> OtherServers { get; set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
     public ServerAaron(int id, int? numServers = 1)
 #pragma warning restore CS8618
     {
         this.ID = id;
-        this.NumServers = numServers ?? 1;
         this.Term = 1;
         TermVotes = new List<TermVote>();
         State = ServerState.Follower;
         Sentmessages = new List<string>();
         startTimers();
         IsLive = true;
+        OtherServers = new List<IServerAaron>();
     }
 
     private void startTimers()
@@ -99,6 +100,7 @@ public class ServerAaron : IServerAaron
             Respond("AppendReceived");
             ElectionTimer.Stop();
             ElectionTimer.Start();
+            OtherServers.FirstOrDefault(s => s.ID == senderID)?.Confirm(term,ID);
         }
         else
         {
@@ -129,6 +131,11 @@ public class ServerAaron : IServerAaron
             TermVotes.Add(new TermVote(requesterId, term));
             Respond("Positive Vote");
         }
+    }
+
+    public void Confirm(int term, int reciverId)
+    {
+        throw new NotImplementedException();
     }
 }
 public enum ServerState

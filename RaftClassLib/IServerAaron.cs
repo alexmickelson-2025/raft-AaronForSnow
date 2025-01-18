@@ -13,7 +13,12 @@
         public int ID { get; set; }
         public int Term { get; set; }
         void RequestVote(int requesterId, int term);
+        void Confirm(int term, int reciverId);
+        void ReciveVote(int senderID, bool v);
+
+        public List<Vote> Votes { get; set; }
         public List<TermVote> TermVotes { get; set; }
+        public List<IServerAaron> OtherServers { get; set; }
     }
     public class TermVote
     {

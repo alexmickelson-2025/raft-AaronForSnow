@@ -14,10 +14,7 @@ namespace RaftTests;
 //[DisableParallelization]
 public class RaftTests
 {
-    private static void SleepElectionTimeoutBuffer(ServerAaron testServer)
-    {
-        Thread.Sleep((int)testServer.ElectionTimer.Interval + 30);
-    }
+    
     //  1. When a leader is active it sends a heart beat within 50ms.
     [Fact]
     public void LeaderSendsHeartBeats()
@@ -31,7 +28,9 @@ public class RaftTests
     [Fact]
     public void AppendEntriesWillSetLeader()
     {
-        var testServer = new ServerAaron(1,3);
+        IServerAaron fake1;
+        IServerAaron testServer;
+        Tools.SetUpThreeServers(out fake1, out testServer);
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 3);
         Assert.Equal(2, testServer.LeaderId);
     }
@@ -47,7 +46,7 @@ public class RaftTests
     public void FollowerWillStartElection()
     {
         var testServer = new ServerAaron(1);
-        SleepElectionTimeoutBuffer(testServer);
+        Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Contains("Election Request", testServer.Sentmessages);
     }
 //  5. When the election time is reset, it is a random value between 150 and 300ms.
@@ -75,14 +74,16 @@ public class RaftTests
     {
         var testServer = new ServerAaron(1);
         testServer.Term = 1;
-        SleepElectionTimeoutBuffer(testServer);
+        Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.True(testServer.Term > 1);
     }
     //  7. When a follower does get an AppendEntries message, it resets the election timer. (i.e.it doesn't start an election even after more than 300ms)
     [Fact]
     public void AppendEntriesResetsElectionTimer()
     {
-        var testServer = new ServerAaron(1, 3);
+        IServerAaron fake1;
+        IServerAaron testServer;
+        Tools.SetUpThreeServers(out fake1, out testServer);
         Thread.Sleep(100);
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
         Thread.Sleep(100);
@@ -96,7 +97,7 @@ public class RaftTests
     public void WhenCadidateGetMajorityVotesBecomesLeaderSingleNode()
     {
         var testServer = new ServerAaron(1); //default to 1 server
-        SleepElectionTimeoutBuffer(testServer);
+        Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Leader, testServer.State);
     }
 
@@ -104,8 +105,10 @@ public class RaftTests
     [Fact]
     public void WhenCadidateGetMajorityVotesBecomesLeaderThreeNodes()
     {
-        var testServer = new ServerAaron(1, 3);
-        SleepElectionTimeoutBuffer(testServer);
+        IServerAaron fake1;
+        IServerAaron testServer;
+        Tools.SetUpThreeServers(out fake1, out testServer);
+        Tools.SleepElectionTimeoutBuffer(testServer);
         testServer.ReciveVote(senderID: 3, true);
         Assert.Equal(ServerState.Leader, testServer.State);
     }
@@ -113,8 +116,10 @@ public class RaftTests
     [Fact]
     public void WhenCadidateDOESNOTGetMajorityVotesWILLNOTBecomesLeaderThreeNodes()
     {
-        var testServer = new ServerAaron(1,3);
-        SleepElectionTimeoutBuffer(testServer);
+        IServerAaron fake1;
+        IServerAaron testServer;
+        Tools.SetUpThreeServers(out fake1, out testServer);
+        Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
     }
     // 10. A follower that has not voted and is in an earlier term responds to a RequestForVoteRPC with yes. (the reply will be a separate RPC)
@@ -131,8 +136,10 @@ public class RaftTests
     [Fact]
     public void WhenBecomesCadidateVotesForSelf()
     {
-        var testServer = new ServerAaron(1,3);
-        SleepElectionTimeoutBuffer(testServer);
+        IServerAaron fake1;
+        IServerAaron testServer;
+        Tools.SetUpThreeServers(out fake1, out testServer);
+        Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
         Assert.Equal(1,testServer.Votes.First().VoterId);
     }
@@ -140,8 +147,10 @@ public class RaftTests
     [Fact]
     public void AppendEntriesWillSetLeaderFromCadidateStateHigerTerms()
     {
-        var testServer = new ServerAaron(1,3);
-        SleepElectionTimeoutBuffer(testServer);
+        IServerAaron fake1;
+        IServerAaron testServer;
+        Tools.SetUpThreeServers(out fake1, out testServer);
+        Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 30);
         testServer.Kill();
@@ -152,8 +161,10 @@ public class RaftTests
     [Fact]
     public void AppendEntriesWillSetLeaderFromCadidateStateEqualTerms()
     {
-        var testServer = new ServerAaron(1, 3);
-        SleepElectionTimeoutBuffer(testServer);
+        IServerAaron fake1;
+        IServerAaron testServer;
+        Tools.SetUpThreeServers(out fake1, out testServer);
+        Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
         testServer.Term = 2; //should already be, but just in case
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 2);
@@ -192,13 +203,15 @@ public class RaftTests
     [Fact]
     public void ElectionTimerExpiresInsideElectionStartsNewElection()
     {
-        var testServer = new ServerAaron(1, 3);
-        SleepElectionTimeoutBuffer(testServer);
+        IServerAaron fake1;
+        IServerAaron testServer;
+        Tools.SetUpThreeServers(out fake1, out testServer);
+        Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
         Assert.Contains("Election Request", testServer.Sentmessages);
         testServer.Sentmessages.Remove("Election Request");
         Assert.DoesNotContain("Election Request", testServer.Sentmessages);
-        SleepElectionTimeoutBuffer(testServer);
+        Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
         Assert.Contains("Election Request", testServer.Sentmessages);
 
@@ -207,7 +220,9 @@ public class RaftTests
     [Fact]
     public void AppentEntriesRepliesWithSuccess()
     {
-        var testServer = new ServerAaron(1,3);
+        IServerAaron fake1;
+        IServerAaron testServer;
+        Tools.SetUpThreeServers(out fake1, out testServer);
         testServer.State = ServerState.Follower;
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 3);
         testServer.Kill();
@@ -231,7 +246,7 @@ public class RaftTests
     public void WhenCadidateBecomdesLeaderImmediateSendHeartBeet()
     {
         var testServer = new ServerAaron(1, 3);
-        SleepElectionTimeoutBuffer(testServer);
+        Tools.SleepElectionTimeoutBuffer(testServer);
         testServer.ReciveVote(senderID: 3, true);
         Assert.Equal(ServerState.Leader, testServer.State);
         Assert.Contains("HB",testServer.Sentmessages);
