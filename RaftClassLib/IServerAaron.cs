@@ -14,11 +14,14 @@
         public int Term { get; set; }
         void RequestVote(int requesterId, int term);
         void Confirm(int term, int reciverId);
+        void HBRecived(int reciverId);
         void ReciveVote(int senderID, bool v);
 
         public List<Vote> Votes { get; set; }
         public List<TermVote> TermVotes { get; set; }
         public List<IServerAaron> OtherServers { get; set; }
+        public int ElectionTimeoutMultiplier { get; set; }
+        public int NetworkDelayModifier { get; set; }
 
     }
     public class TermVote

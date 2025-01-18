@@ -15,6 +15,8 @@ public class ServerAaron : IServerAaron
     public List<Vote> Votes { get; set; }
     public List<TermVote> TermVotes { get; set; }
     public List<IServerAaron> OtherServers { get; set; }
+    public int ElectionTimeoutMultiplier { get; set; }
+    public int NetworkDelayModifier { get; set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
     public ServerAaron(int id, int? numServers = 1)
@@ -22,6 +24,8 @@ public class ServerAaron : IServerAaron
     {
         this.ID = id;
         this.Term = 1;
+        ElectionTimeoutMultiplier = 1;
+        NetworkDelayModifier = 0;
         TermVotes = new List<TermVote>();
         State = ServerState.Follower;
         Sentmessages = new List<string>();
@@ -49,6 +53,10 @@ public class ServerAaron : IServerAaron
         if(State == ServerState.Leader)
         {
             SelfLog("HB");
+            foreach (var server in OtherServers)
+            {
+                server.AppendEntries(ID,"HB",Term);
+            }
         }
     }
 
@@ -93,7 +101,11 @@ public class ServerAaron : IServerAaron
 
     public void AppendEntries(int senderID, string entry, int term)
     {
-        if (term >= Term)
+        if (entry == "HB")
+        {
+            OtherServers.FirstOrDefault(s => s.ID == senderID)?.HBRecived(ID);
+        }
+        else if (term >= Term)
         {
             LeaderId = senderID;
             State = ServerState.Follower;
@@ -138,7 +150,12 @@ public class ServerAaron : IServerAaron
 
     public void Confirm(int term, int reciverId)
     {
-        throw new NotImplementedException();
+        //throw new NotImplementedException();
+    }
+
+    public void HBRecived(int reciverId)
+    {
+        //throw new NotImplementedException();
     }
 }
 public enum ServerState

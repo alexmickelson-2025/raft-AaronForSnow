@@ -21,6 +21,8 @@ public class SimulationNode : IServerAaron
     public List<Vote> Votes { get => ((IServerAaron)InnerNode).Votes; set => ((IServerAaron)InnerNode).Votes = value; }
     public int LeaderId { get => ((IServerAaron)InnerNode).LeaderId; set => ((IServerAaron)InnerNode).LeaderId = value; }
     public List<IServerAaron> OtherServers { get => ((IServerAaron)InnerNode).OtherServers; set => ((IServerAaron)InnerNode).OtherServers = value; }
+    public int ElectionTimeoutMultiplier { get => ((IServerAaron)InnerNode).ElectionTimeoutMultiplier; set => ((IServerAaron)InnerNode).ElectionTimeoutMultiplier = value; }
+    public int NetworkDelayModifier { get => ((IServerAaron)InnerNode).NetworkDelayModifier; set => ((IServerAaron)InnerNode).NetworkDelayModifier = value; }
 
     public void AppendEntries(int senderID, string entry, int term)
     {
@@ -30,6 +32,11 @@ public class SimulationNode : IServerAaron
     public void Confirm(int term, int reciverId)
     {
         ((IServerAaron)InnerNode).Confirm(term, reciverId);
+    }
+
+    public void HBRecived(int reciverId)
+    {
+        ((IServerAaron)InnerNode).HBRecived(reciverId);
     }
 
     public void Kill()
