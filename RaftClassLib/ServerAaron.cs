@@ -56,7 +56,7 @@ public class ServerAaron : IServerAaron
     {
 
         State = ServerState.Candidate;
-        Term += Term;
+        ++Term;
         Respond("Election Request");
         Votes = new List<Vote>() { new Vote(1, true) };
         tallyVotes();

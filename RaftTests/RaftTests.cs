@@ -14,12 +14,15 @@ namespace RaftTests;
 //[DisableParallelization]
 public class RaftTests
 {
-    
+    private static void SleepElectionTimeoutBuffer(ServerAaron testServer)
+    {
+        Thread.Sleep((int)testServer.ElectionTimer.Interval + 30);
+    }
     //  1. When a leader is active it sends a heart beat within 50ms.
     [Fact]
     public void LeaderSendsHeartBeats()
     {
-        var testServer = new ServerAaron(1);
+        IServerAaron testServer = new ServerAaron(1);
         testServer.State = ServerState.Leader;
         Thread.Sleep(65);
         Assert.True(testServer.Sentmessages.Count() >= 1);
@@ -38,7 +41,7 @@ public class RaftTests
     [Fact]
     public void ServerStartsInFollowerMode()
     {
-        var testServer = new ServerAaron(1);
+        IServerAaron testServer = new ServerAaron(1);
         Assert.Equal(ServerState.Follower, testServer.State);
     }
     //  4. When a follower doesn't get a message for 300ms then it starts an election.
@@ -57,7 +60,7 @@ public class RaftTests
     {
         List<double> t = new List<double>();
         for (int i = 0; i < 4; i++) {
-            var testServer = new ServerAaron(1);
+            IServerAaron testServer = new ServerAaron(1);
             Assert.True(testServer.ElectionTimer.Interval >= 150);
             Assert.True(testServer.ElectionTimer.Interval <= 300);
             t.Add(testServer.ElectionTimer.Interval);
@@ -72,7 +75,7 @@ public class RaftTests
     [Fact]
     public void ElectionWillBeginsWithHigherTerm()
     {
-        var testServer = new ServerAaron(1);
+        IServerAaron testServer = new ServerAaron(1);
         testServer.Term = 1;
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.True(testServer.Term > 1);
@@ -126,7 +129,7 @@ public class RaftTests
     [Fact]
     public void WhenFolloewerAskedForVoteGetPositiveResponce()
     {
-        var testServer = new ServerAaron(1, 3);
+        IServerAaron testServer = new ServerAaron(1, 3);
         testServer.RequestVote(2,2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
@@ -176,7 +179,7 @@ public class RaftTests
     [Fact]
     public void WhenFolloewerAskedForVoteSameTermForAnotherSendNegativeResponce()
     {
-        var testServer = new ServerAaron(1, 3);
+        IServerAaron testServer = new ServerAaron(1, 3);
         testServer.RequestVote(2, 2); // id, term
         testServer.RequestVote(3, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
@@ -188,7 +191,7 @@ public class RaftTests
     [Fact]
     public void WhenFolloewerAskedForVoteSameTermAgainVoteAgain()
     {
-        var testServer = new ServerAaron(1, 3);
+        IServerAaron testServer = new ServerAaron(1, 3);
         testServer.RequestVote(2, 2); // id, term
         testServer.RequestVote(2, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
@@ -232,7 +235,7 @@ public class RaftTests
     [Fact]
     public void AppendEntriesWithLowerTermIsRejected()
     {
-        var testServer = new ServerAaron(1, 3);
+        IServerAaron testServer = new ServerAaron(1, 3);
         testServer.LeaderId = 3;
         testServer.Term = 4;
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
