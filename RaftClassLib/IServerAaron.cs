@@ -19,6 +19,7 @@
         public List<Vote> Votes { get; set; }
         public List<TermVote> TermVotes { get; set; }
         public List<IServerAaron> OtherServers { get; set; }
+
     }
     public class TermVote
     {
