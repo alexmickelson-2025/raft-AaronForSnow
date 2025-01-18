@@ -48,7 +48,7 @@ public class ServerAaron : IServerAaron
     {
         if(State == ServerState.Leader)
         {
-            Respond("HB");
+            SelfLog("HB");
         }
     }
 
@@ -57,7 +57,7 @@ public class ServerAaron : IServerAaron
 
         State = ServerState.Candidate;
         ++Term;
-        Respond("Election Request");
+        SelfLog("Election Request");
         Votes = new List<Vote>() { new Vote(1, true) };
         tallyVotes();
     }
@@ -82,7 +82,7 @@ public class ServerAaron : IServerAaron
         }
         return count;
     }
-    private void Respond(string message)
+    private void SelfLog(string message)
     {
         Sentmessages.Add(message);
     }
@@ -97,14 +97,14 @@ public class ServerAaron : IServerAaron
         {
             LeaderId = senderID;
             State = ServerState.Follower;
-            Respond("AppendReceived");
+            SelfLog("AppendReceived");
             ElectionTimer.Stop();
             ElectionTimer.Start();
             OtherServers.FirstOrDefault(s => s.ID == senderID)?.Confirm(term,ID);
         }
         else
         {
-            Respond($"Leader is {LeaderId}");
+            SelfLog($"Leader is {LeaderId}");
         }
     }
 
@@ -118,18 +118,21 @@ public class ServerAaron : IServerAaron
     {
         int termVotedId = TermVotes.FirstOrDefault(t => t.Term == term)?.RequesterId ?? 0;
 
-        if (termVotedId == requesterId)
+        if (termVotedId == requesterId) //Repeted Vote
         {
-            Respond("Positive Vote");
+            SelfLog("Positive Vote");
         }
         else if (termVotedId != requesterId && termVotedId != 0)
         {
-            Respond("Rejected Vote");
+            SelfLog("Rejected Vote");
+            OtherServers.FirstOrDefault(s => s.ID == requesterId)?.ReciveVote(ID, false);
+
         }
         else // no votes for that term yet
         {
             TermVotes.Add(new TermVote(requesterId, term));
-            Respond("Positive Vote");
+            OtherServers.FirstOrDefault(s => s.ID == requesterId)?.ReciveVote(ID, true);
+            SelfLog("Positive Vote");
         }
     }
 

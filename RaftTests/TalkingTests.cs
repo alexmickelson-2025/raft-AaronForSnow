@@ -18,9 +18,26 @@ public class TalkingTests
 
         testServer.AppendEntries(1, "tm", 2);
         fake1.Received(1).Confirm(2, 3); //term 2 from server 3
-        //Tools.SleepElectionTimeoutBuffer(testServerFollower);
-        //Assert.Contains("Election Request", testServer.Sentmessages);
+    }
+    [Fact]
+    public void FollowerRespondsToVoteRequestPositive()
+    {
+        IServerAaron fake1;
+        IServerAaron testServer;
+        Tools.SetUpThreeServers(out fake1, out testServer);
+
+        testServer.RequestVote(1, 2);
+        fake1.Received(1).ReciveVote(3,true);
+    }
+    [Fact]
+    public void FollowerRespondsToVoteRequestNegative()
+    {
+        IServerAaron fake1;
+        IServerAaron testServer;
+        Tools.SetUpThreeServers(out fake1, out testServer);
+        testServer.RequestVote(2, 2);
+        testServer.RequestVote(1, 2);
+        fake1.Received(1).ReciveVote(3, false);
     }
 
-    
 }
