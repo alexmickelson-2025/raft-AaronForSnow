@@ -17,7 +17,6 @@ public static class Tools
     {
         fake1 = Substitute.For<IServerAaron>();
         fake1.ID = 1;
-        fake1.State = ServerState.Leader;
         var fake2 = Substitute.For<IServerAaron>();
         fake2.ID = 2;
         testServer = new ServerAaron(3);

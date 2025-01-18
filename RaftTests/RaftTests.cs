@@ -129,8 +129,10 @@ public class RaftTests
     [Fact]
     public void WhenFolloewerAskedForVoteGetPositiveResponce()
     {
-        IServerAaron testServer = new ServerAaron(1, 3);
-        testServer.RequestVote(2,2); // id, term
+		IServerAaron fake1;
+		IServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		testServer.RequestVote(2,2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
         Assert.Contains("Positive Vote", testServer.Sentmessages);
@@ -179,9 +181,11 @@ public class RaftTests
     [Fact]
     public void WhenFolloewerAskedForVoteSameTermForAnotherSendNegativeResponce()
     {
-        IServerAaron testServer = new ServerAaron(1, 3);
-        testServer.RequestVote(2, 2); // id, term
-        testServer.RequestVote(3, 2); // id, term
+		IServerAaron fake1;
+		IServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		testServer.RequestVote(2, 2); // id, term
+        testServer.RequestVote(1, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
         Assert.Contains("Positive Vote", testServer.Sentmessages);
@@ -191,8 +195,10 @@ public class RaftTests
     [Fact]
     public void WhenFolloewerAskedForVoteSameTermAgainVoteAgain()
     {
-        IServerAaron testServer = new ServerAaron(1, 3);
-        testServer.RequestVote(2, 2); // id, term
+		IServerAaron fake1;
+		IServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		testServer.RequestVote(2, 2); // id, term
         testServer.RequestVote(2, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
@@ -235,21 +241,25 @@ public class RaftTests
     [Fact]
     public void AppendEntriesWithLowerTermIsRejected()
     {
-        IServerAaron testServer = new ServerAaron(1, 3);
-        testServer.LeaderId = 3;
+		IServerAaron fake1;
+		IServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		testServer.LeaderId = 1;
         testServer.Term = 4;
         testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
         testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
-        Assert.Equal(3, testServer.LeaderId);
-        Assert.Contains("Leader is 3", testServer.Sentmessages); // act of rejecting
+        Assert.Equal(1, testServer.LeaderId);
+        Assert.Contains("Leader is 1", testServer.Sentmessages); // act of rejecting
     }
     // 19. When a candidate wins an election, it immediately sends a heart beat.
     [Fact]
     public void WhenCadidateBecomdesLeaderImmediateSendHeartBeet()
     {
-        var testServer = new ServerAaron(1, 3);
-        Tools.SleepElectionTimeoutBuffer(testServer);
+		IServerAaron fake1;
+		IServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		Tools.SleepElectionTimeoutBuffer(testServer);
         testServer.ReciveVote(senderID: 3, true);
         Assert.Equal(ServerState.Leader, testServer.State);
         Assert.Contains("HB",testServer.Sentmessages);

@@ -1,5 +1,7 @@
 ﻿
 namespace RaftClassLib;
+
+using System;
 using System.Timers;
 public class ServerAaron : IServerAaron
 {
@@ -19,7 +21,7 @@ public class ServerAaron : IServerAaron
     public int NetworkDelayModifier { get; set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
-    public ServerAaron(int id, int? numServers = 1)
+    public ServerAaron(int id)
 #pragma warning restore CS8618
     {
         this.ID = id;
@@ -36,16 +38,20 @@ public class ServerAaron : IServerAaron
 
     private void startTimers()
     {
-        Random random = new Random();
-        int interval = random.Next(150, 300);
-        ElectionTimer = new Timer(interval);
-        ElectionTimer.Elapsed += StartElection;
-        ElectionTimer.AutoReset = true;
-        ElectionTimer.Start();
+        startElectiontimer();
         HBTimer = new Timer(50);
         HBTimer.Elapsed += sendHeartBeet;
         HBTimer.AutoReset = true;
         HBTimer.Start();
+    }
+    private void startElectiontimer()
+    {
+        Random random = new Random();
+        int interval = random.Next(150 * ElectionTimeoutMultiplier, 300 * ElectionTimeoutMultiplier);
+        ElectionTimer = new Timer(interval);
+        ElectionTimer.Elapsed += StartElection;
+        ElectionTimer.AutoReset = true;
+        ElectionTimer.Start();
     }
 
     private void sendHeartBeet(object? sender, ElapsedEventArgs? e)
@@ -101,6 +107,7 @@ public class ServerAaron : IServerAaron
 
     public void AppendEntries(int senderID, string entry, int term)
     {
+        PosibleDelay();
         if (entry == "HB")
         {
             OtherServers.FirstOrDefault(s => s.ID == senderID)?.HBRecived(ID);
@@ -111,12 +118,20 @@ public class ServerAaron : IServerAaron
             State = ServerState.Follower;
             SelfLog("AppendReceived");
             ElectionTimer.Stop();
-            ElectionTimer.Start();
-            OtherServers.FirstOrDefault(s => s.ID == senderID)?.Confirm(term,ID);
+            startElectiontimer();
+            OtherServers.FirstOrDefault(s => s.ID == senderID)?.Confirm(term, ID);
         }
         else
         {
             SelfLog($"Leader is {LeaderId}");
+        }
+    }
+
+    private void PosibleDelay()
+    {
+        if (NetworkDelayModifier != 0)
+        {
+            Thread.Sleep(NetworkDelayModifier);
         }
     }
 
@@ -150,11 +165,13 @@ public class ServerAaron : IServerAaron
 
     public void Confirm(int term, int reciverId)
     {
-        //throw new NotImplementedException();
+        PosibleDelay();
+            //throw new NotImplementedException();
     }
 
     public void HBRecived(int reciverId)
     {
+        PosibleDelay();
         //throw new NotImplementedException();
     }
 }

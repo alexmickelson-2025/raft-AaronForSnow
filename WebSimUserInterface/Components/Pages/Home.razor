@@ -31,17 +31,17 @@ Welcome to your new app.
 	bool isRunning = false;
 	Timer? timer;
 	void startSimulation(){
-		var node1 = new ServerAaron(1,3);
-		var node2 = new ServerAaron(2,3);
-		var node3 = new ServerAaron(3,3);
+		var node1 = new ServerAaron(1);
+		var node2 = new ServerAaron(2);
+		var node3 = new ServerAaron(3);
 
 		var simulation1 = new SimulationNode(node1);
 		var simulaiton2 = new SimulationNode(node2);
 		var simulation3 = new SimulationNode(node3);
 
-		//node1.OtherNodes = [simulaiton2, simulation3];
-		//node2.OtherNodes = [simulaiton1, simulation3];
-		//node3.OtherNodes = [simulaiton2, simulation1];
+		node1.OtherServers = [simulaiton2, simulation3];
+		node2.OtherServers = [simulation1, simulation3];
+		node3.OtherServers = [simulaiton2, simulation1];
 
 		nodes = [simulation1, simulaiton2, simulation3];
 
