@@ -8,6 +8,8 @@
 
 Welcome to your new app.
 <button @onclick='startSimulation'>start</button>
+<button @onclick='setNetworkDelay'>slow down network</button>
+<button @onclick='slowElectionTimer'>slow down Eleciton Timer</button>
 @foreach (var node in nodes){
 	<div>
 		<ul>
@@ -44,11 +46,25 @@ Welcome to your new app.
 		node3.OtherServers = [simulaiton2, simulation1];
 
 		nodes = [simulation1, simulaiton2, simulation3];
-
+		setNetworkDelay();
 		isRunning = true;
 		timer = new Timer(_ =>
 		{
 			InvokeAsync(StateHasChanged);
 		}, null, 0, 200);
+	}
+	void setNetworkDelay()
+	{
+		foreach (var node in nodes)
+		{
+			node.NetworkDelayModifier += 500;
+		}
+	}
+	void slowElectionTimer()
+	{
+		foreach (var node in nodes)
+		{
+			node.ElectionTimeoutMultiplier += 10;
+		}
 	}
 }

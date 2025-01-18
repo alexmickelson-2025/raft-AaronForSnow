@@ -23,6 +23,7 @@ public class RaftTests
     public void LeaderSendsHeartBeats()
     {
         IServerAaron testServer = new ServerAaron(1);
+        testServer.StartSim();
         testServer.State = ServerState.Leader;
         Thread.Sleep(65);
         Assert.True(testServer.Sentmessages.Count() >= 1);
@@ -49,6 +50,7 @@ public class RaftTests
     public void FollowerWillStartElection()
     {
         var testServer = new ServerAaron(1);
+        testServer.StartSim();
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Contains("Election Request", testServer.Sentmessages);
     }
@@ -61,6 +63,7 @@ public class RaftTests
         List<double> t = new List<double>();
         for (int i = 0; i < 4; i++) {
             IServerAaron testServer = new ServerAaron(1);
+            testServer.StartSim();
             Assert.True(testServer.ElectionTimer.Interval >= 150);
             Assert.True(testServer.ElectionTimer.Interval <= 300);
             t.Add(testServer.ElectionTimer.Interval);
@@ -76,6 +79,7 @@ public class RaftTests
     public void ElectionWillBeginsWithHigherTerm()
     {
         IServerAaron testServer = new ServerAaron(1);
+        testServer.StartSim();
         testServer.Term = 1;
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.True(testServer.Term > 1);
@@ -100,6 +104,7 @@ public class RaftTests
     public void WhenCadidateGetMajorityVotesBecomesLeaderSingleNode()
     {
         var testServer = new ServerAaron(1); //default to 1 server
+        testServer.StartSim();
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Leader, testServer.State);
     }

@@ -8,6 +8,7 @@ public class SimulationNode : IServerAaron
     public SimulationNode(ServerAaron innerNode)
     {
         this.InnerNode = innerNode;
+        this.InnerNode.ElectionTimeoutMultiplier = 100;
     }
 
     public ServerState State { get => ((IServerAaron)InnerNode).State; set => ((IServerAaron)InnerNode).State = value; }
@@ -53,4 +54,9 @@ public class SimulationNode : IServerAaron
     {
         ((IServerAaron)InnerNode).RequestVote(requesterId, term);
     }
+
+	public void StartSim()
+	{
+        InnerNode.StartSim();
+	}
 }

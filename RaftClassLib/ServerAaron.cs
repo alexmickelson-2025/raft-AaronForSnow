@@ -23,20 +23,24 @@ public class ServerAaron : IServerAaron
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
     public ServerAaron(int id)
 #pragma warning restore CS8618
-    {
-        this.ID = id;
-        this.Term = 1;
-        ElectionTimeoutMultiplier = 1;
-        NetworkDelayModifier = 0;
-        TermVotes = new List<TermVote>();
-        State = ServerState.Follower;
-        Sentmessages = new List<string>();
-        startTimers();
-        IsLive = true;
-        OtherServers = new List<IServerAaron>();
-    }
+	{
+		this.ID = id;
+		this.Term = 1;
+		ElectionTimeoutMultiplier = 1;
+		NetworkDelayModifier = 0;
+		TermVotes = new List<TermVote>();
+		State = ServerState.Follower;
+		Sentmessages = new List<string>();
+		OtherServers = new List<IServerAaron>();
+	}
 
-    private void startTimers()
+	public void StartSim()
+	{
+		startTimers();
+		IsLive = true;
+	}
+
+	private void startTimers()
     {
         startElectiontimer();
         HBTimer = new Timer(50);
@@ -110,7 +114,9 @@ public class ServerAaron : IServerAaron
         PosibleDelay();
         if (entry == "HB")
         {
-            OtherServers.FirstOrDefault(s => s.ID == senderID)?.HBRecived(ID);
+			ElectionTimer.Stop();
+			startElectiontimer();
+			OtherServers.FirstOrDefault(s => s.ID == senderID)?.HBRecived(ID);
         }
         else if (term >= Term)
         {
@@ -160,7 +166,9 @@ public class ServerAaron : IServerAaron
             TermVotes.Add(new TermVote(requesterId, term));
             OtherServers.FirstOrDefault(s => s.ID == requesterId)?.ReciveVote(ID, true);
             SelfLog("Positive Vote");
-        }
+			ElectionTimer.Stop();
+			startElectiontimer();
+		}
     }
 
     public void Confirm(int term, int reciverId)

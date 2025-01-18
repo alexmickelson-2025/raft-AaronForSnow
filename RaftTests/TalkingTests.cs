@@ -18,6 +18,7 @@ public class TalkingTests
     [Fact]
     public void FollowerRespondsToAppendEntriesToLeader()
     {
+        //testServer.StartSim();
         testServer.AppendEntries(1, "tm", 2);
         fake1.Received(1).Confirm(2, 3); //term 2 from server 3
     }
@@ -71,9 +72,9 @@ public class TalkingTests
 	[Fact]
 	public void WhenFolloewerAskedForVoteGetPositiveResponce()
 	{
-		testServer.RequestVote(2, 2); // id, term
+		testServer.RequestVote(1, 2); // id, term
 		Assert.Equal(ServerState.Follower, testServer.State);
-		Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
-		Assert.Contains("Positive Vote", testServer.Sentmessages);
+		Assert.Equal(1, testServer.TermVotes.Last().RequesterId);
+        fake1.Received(1).ReciveVote(3, true);
 	}
 }

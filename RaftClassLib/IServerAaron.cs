@@ -16,6 +16,7 @@
         void Confirm(int term, int reciverId);
         void HBRecived(int reciverId);
         void ReciveVote(int senderID, bool v);
+        void StartSim();
 
         public List<Vote> Votes { get; set; }
         public List<TermVote> TermVotes { get; set; }
