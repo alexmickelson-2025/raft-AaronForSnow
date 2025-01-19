@@ -7,30 +7,52 @@
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
-<button @onclick='startSimulation'>start</button>
-<button @onclick='setNetworkDelay'>slow down network</button>
-<button @onclick="async () => await slowElectionTimer()">slow down Eleciton Timer</button>
-@foreach (var node in nodes){
-	<div>
-		<ul>
-			<li><label>ID: </label>@node.ID</li>
-			<li><label>Term: </label>@node.Term</li>
-			<li><label>TermVotes:</label>
-				@foreach (var vote in node.TermVotes){
-					<ul>
-						<li><label>Term of Vote</label>@vote.Term</li>
-						<li><label>Requester for Vote</label>@vote.RequesterId</li>
-					</ul>
-				}	
-			</li>
-			<li><label>State: </label>@node.State</li>
-			<li><label>election timeout: </label>@node.ElectionTimer.Interval</li>
-		</ul>
+<div class="flex-column">
+	<div calss="flex-row">
+
+		<button @onclick='startSimulation'>start</button>
+		<div>
+
+			<label for="speed">
+				Election timeout between @(FormatMilliSeconds(150 * ElectionTimer)) and @(FormatMilliSeconds(300 *
+				ElectionTimer)) seconds
+
+
+				<input type="range" id="speed" name="speed" min="1" max="150" @bind:event="oninput"
+					   @bind=ElectionTimer @onchange=setElectionTimer />
+					</label>
+		</div>
+		<div>
+
+			<label for="speed">
+				Network Delay: @(FormatMilliSeconds(NetworkDelay)) seconds
+
+
+				<input type="range" id="speed" name="speed" min="10" max="10000" @bind:event="oninput"
+					   @bind=NetworkDelay @onchange=setNetworkDelay />
+			</label>
+		</div>
 	</div>
-}
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px;">
+	@foreach (var node in nodes)
+	{
+		<div style="border: 1px solid #ccc; padding: 10px; width: 200px;">
+			<ul style="list-style-type: none; padding-left: 0;">
+				<li><label>ID: </label>@node.ID</li>
+				<li><label>Term: </label>@node.Term</li>
+				<li><label>State: </label>@node.State</li>
+				<li><label>Election Timeout: </label>@node.ElectionTimer.Interval ms</li>
+				<li><label>Leader ID: </label>@node.LeaderId</li>
+			</ul>
+		</div>
+	}
+</div>
 
 @code {
 	List<SimulationNode> nodes = [];
+	int NetworkDelay = 10;
+	int ElectionTimer = 1;
 	bool isRunning = false;
 	Timer? timer;
 	async Task startSimulation(){
@@ -60,14 +82,21 @@ Welcome to your new app.
 	}
 	void setNetworkDelay()
 	{
-
+		foreach (var node in nodes)
+		{
+			node.NetworkDelayModifier = this.NetworkDelay;
+		}
 	}
-	async Task slowElectionTimer()
+	async Task setElectionTimer()
 	{
 		foreach (var node in nodes)
 		{
-			node.ElectionTimeoutMultiplier = 1 + node.ElectionTimeoutMultiplier;
+			node.ElectionTimeoutMultiplier = this.ElectionTimer;
 		}
 		await Task.CompletedTask;
+	}
+	public static string FormatMilliSeconds(double milliSeconds)
+	{
+		return $"{milliSeconds / 1000.0:F1}";
 	}
 }
