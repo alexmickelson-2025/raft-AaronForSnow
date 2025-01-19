@@ -3,8 +3,6 @@
     using System.Timers;
     public interface IServerAaron
     {
-        void AppendEntries(int senderID, string entry, int term);
-        void Kill();
         public ServerState State {get; set;}
         public List<string> Sentmessages { get; set;}   
         public Timer ElectionTimer { get; set;}
@@ -12,17 +10,19 @@
         public int LeaderId { get; set;}
         public int ID { get; set; }
         public int Term { get; set; }
-        void RequestVote(int requesterId, int term);
-        void Confirm(int term, int reciverId);
-        void HBRecived(int reciverId);
-        void ReciveVote(int senderID, bool v);
-        void StartSim();
-
+        public int ElectionTimeoutMultiplier { get; set; }
+        public int NetworkDelayModifier { get; set; }
         public List<Vote> Votes { get; set; }
         public List<TermVote> TermVotes { get; set; }
         public List<IServerAaron> OtherServers { get; set; }
-        public int ElectionTimeoutMultiplier { get; set; }
-        public int NetworkDelayModifier { get; set; }
+        Task AppendEntries(int senderID, string entry, int term);
+        Task Kill();
+        Task RequestVote(int requesterId, int term);
+        Task Confirm(int term, int reciverId);
+        Task HBRecived(int reciverId);
+        Task ReciveVote(int senderID, bool v);
+        Task StartSim();
+
 
     }
     public class TermVote

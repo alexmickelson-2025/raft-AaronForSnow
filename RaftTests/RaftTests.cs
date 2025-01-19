@@ -47,10 +47,10 @@ public class RaftTests
     }
     //  4. When a follower doesn't get a message for 300ms then it starts an election.
     [Fact]
-    public void FollowerWillStartElection()
+    public async Task FollowerWillStartElection()
     {
         var testServer = new ServerAaron(1);
-        testServer.StartSim();
+        await testServer.StartSim();
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Contains("Election Request", testServer.Sentmessages);
     }
@@ -101,10 +101,10 @@ public class RaftTests
     }
     //  8. Given an election begins, when the candidate gets a majority of votes, it becomes a leader. (think of the easy case; can use two tests for single and multi-node clusters)
     [Fact]
-    public void WhenCadidateGetMajorityVotesBecomesLeaderSingleNode()
+    public async Task WhenCadidateGetMajorityVotesBecomesLeaderSingleNode()
     {
         var testServer = new ServerAaron(1); //default to 1 server
-        testServer.StartSim();
+        await testServer.StartSim();
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Leader, testServer.State);
     }

@@ -50,17 +50,17 @@ public class TalkingTests
         testServer.AppendEntries(1, "HB", 1);
         fake1.Received(1).HBRecived(3);
     }
-	//[Fact] //Question for Instructor, Why does this test Fail?
-	//public void NetworkDelayModifiesAppendEntriesConfirm()
-	//{
-	//    testServer.NetworkDelayModifier = 300;
-	//    testServer.AppendEntries(1, "test", 2);
-	//    fake1.Received(0).Confirm(2,3);
-	//    Thread.Sleep(300);
-	//    fake1.Received(1).Confirm(2,3);
-	//}
-	//  9. Given a candidate receives a majority of votes while waiting for unresponsive node, it still becomes a leader.
-	[Fact]
+    [Fact] //Question for Instructor, Why does this test Fail?
+    public void NetworkDelayModifiesAppendEntriesConfirm()
+    {
+        //testServer.NetworkDelayModifier = 30;
+        testServer.AppendEntries(1, "test", 2);
+        //fake1.Received(0).Confirm(2, 3);
+        Thread.Sleep(350);
+        fake1.Received(1).Confirm(2, 3);
+    }
+    //  9. Given a candidate receives a majority of votes while waiting for unresponsive node, it still becomes a leader.
+    [Fact]
 	public void WhenCadidateGetMajorityVotesBecomesLeaderThreeNodes()
 	{
         testServer.Votes = new List<Vote>() { new Vote(3, true) };

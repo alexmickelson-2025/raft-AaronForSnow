@@ -6,7 +6,6 @@ using System.Timers;
 public class ServerAaron : IServerAaron
 {
     public ServerState State { get; set; }
-    public List<string> Sentmessages { get; set; }
     public System.Timers.Timer ElectionTimer { get; set; }
     public System.Timers.Timer HBTimer { get; set; }
     public bool IsLive { get; set; }
@@ -14,11 +13,12 @@ public class ServerAaron : IServerAaron
     public int ID {  get; set; }
     public int Term { get; set; }
     private int NumServers { get => OtherServers.Count + 1; }
+    public int ElectionTimeoutMultiplier { get; set; }
+    public int NetworkDelayModifier { get; set; }
+    public List<string> Sentmessages { get; set; }
     public List<Vote> Votes { get; set; }
     public List<TermVote> TermVotes { get; set; }
     public List<IServerAaron> OtherServers { get; set; }
-    public int ElectionTimeoutMultiplier { get; set; }
-    public int NetworkDelayModifier { get; set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
     public ServerAaron(int id)
@@ -34,27 +34,29 @@ public class ServerAaron : IServerAaron
 		OtherServers = new List<IServerAaron>();
 	}
 
-	public void StartSim()
+	public async Task StartSim()
 	{
 		startTimers();
 		IsLive = true;
+        await Task.CompletedTask;
 	}
 
 	private void startTimers()
     {
-        startElectiontimer();
-        HBTimer = new Timer(50);
+		int interval = Random.Shared.Next(150 * ElectionTimeoutMultiplier, 300 * ElectionTimeoutMultiplier);
+		ElectionTimer = new Timer(interval);
+		ElectionTimer.Elapsed += StartElection;
+		ElectionTimer.AutoReset = true;
+		ElectionTimer.Start();
+		HBTimer = new Timer(50);
         HBTimer.Elapsed += sendHeartBeet;
         HBTimer.AutoReset = true;
         HBTimer.Start();
     }
-    private void startElectiontimer()
+    private void resetElectionTimer()
     {
-        Random random = new Random();
-        int interval = random.Next(150 * ElectionTimeoutMultiplier, 300 * ElectionTimeoutMultiplier);
-        ElectionTimer = new Timer(interval);
-        ElectionTimer.Elapsed += StartElection;
-        ElectionTimer.AutoReset = true;
+        int interval = Random.Shared.Next(150 * ElectionTimeoutMultiplier, 300 * ElectionTimeoutMultiplier);
+        ElectionTimer.Interval = interval;
         ElectionTimer.Start();
     }
 
@@ -104,19 +106,21 @@ public class ServerAaron : IServerAaron
     {
         Sentmessages.Add(message);
     }
-    public void Kill()
+    public async Task Kill()
     {
         IsLive = false;
+        await Task.CompletedTask;
     }
 
-    public void AppendEntries(int senderID, string entry, int term)
+    public async Task AppendEntries(int senderID, string entry, int term)
     {
-        PosibleDelay();
+        await PosibleDelay();
         if (entry == "HB")
         {
 			ElectionTimer.Stop();
-			startElectiontimer();
-			OtherServers.FirstOrDefault(s => s.ID == senderID)?.HBRecived(ID);
+			resetElectionTimer();
+			await OtherServers.FirstOrDefault(s => s.ID == senderID)?.HBRecived(ID);
+            State = ServerState.Follower;
         }
         else if (term >= Term)
         {
@@ -124,8 +128,8 @@ public class ServerAaron : IServerAaron
             State = ServerState.Follower;
             SelfLog("AppendReceived");
             ElectionTimer.Stop();
-            startElectiontimer();
-            OtherServers.FirstOrDefault(s => s.ID == senderID)?.Confirm(term, ID);
+            resetElectionTimer();
+            await OtherServers.FirstOrDefault(s => s.ID == senderID)?.Confirm(term, ID);
         }
         else
         {
@@ -133,21 +137,22 @@ public class ServerAaron : IServerAaron
         }
     }
 
-    private void PosibleDelay()
+    private async Task PosibleDelay()
     {
         if (NetworkDelayModifier != 0)
         {
-            Thread.Sleep(NetworkDelayModifier);
+            await Task.Delay(NetworkDelayModifier);
         }
     }
 
-    public void ReciveVote(int senderID, bool positveVote)
+    public async Task ReciveVote(int senderID, bool positveVote)
     {
         Votes.Add(new Vote(senderID, positveVote));
         tallyVotes();
+        await Task.CompletedTask;
     }
 
-    public void RequestVote(int requesterId, int term)
+    public async Task RequestVote(int requesterId, int term)
     {
         int termVotedId = TermVotes.FirstOrDefault(t => t.Term == term)?.RequesterId ?? 0;
 
@@ -158,29 +163,30 @@ public class ServerAaron : IServerAaron
         else if (termVotedId != requesterId && termVotedId != 0)
         {
             SelfLog("Rejected Vote");
-            OtherServers.FirstOrDefault(s => s.ID == requesterId)?.ReciveVote(ID, false);
+            await OtherServers.FirstOrDefault(s => s.ID == requesterId)?.ReciveVote(ID, false);
 
         }
         else // no votes for that term yet
         {
             TermVotes.Add(new TermVote(requesterId, term));
-            OtherServers.FirstOrDefault(s => s.ID == requesterId)?.ReciveVote(ID, true);
+            await OtherServers.FirstOrDefault(s => s.ID == requesterId)?.ReciveVote(ID, true);
             SelfLog("Positive Vote");
 			ElectionTimer.Stop();
-			startElectiontimer();
+			resetElectionTimer();
 		}
     }
 
-    public void Confirm(int term, int reciverId)
+    public async Task Confirm(int term, int reciverId)
     {
-        PosibleDelay();
+        await PosibleDelay();
+        await Task.CompletedTask;
             //throw new NotImplementedException();
     }
 
-    public void HBRecived(int reciverId)
+    public async Task HBRecived(int reciverId)
     {
-        PosibleDelay();
-        //throw new NotImplementedException();
+        await PosibleDelay();
+        await Task.CompletedTask;
     }
 }
 public enum ServerState

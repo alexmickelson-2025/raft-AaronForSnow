@@ -9,7 +9,7 @@
 Welcome to your new app.
 <button @onclick='startSimulation'>start</button>
 <button @onclick='setNetworkDelay'>slow down network</button>
-<button @onclick='slowElectionTimer'>slow down Eleciton Timer</button>
+<button @onclick="async () => await slowElectionTimer()">slow down Eleciton Timer</button>
 @foreach (var node in nodes){
 	<div>
 		<ul>
@@ -24,6 +24,7 @@ Welcome to your new app.
 				}	
 			</li>
 			<li><label>State: </label>@node.State</li>
+			<li><label>election timeout: </label>@node.ElectionTimer.Interval</li>
 		</ul>
 	</div>
 }
@@ -32,11 +33,11 @@ Welcome to your new app.
 	List<SimulationNode> nodes = [];
 	bool isRunning = false;
 	Timer? timer;
-	void startSimulation(){
+	async Task startSimulation(){
 		var node1 = new ServerAaron(1);
 		var node2 = new ServerAaron(2);
 		var node3 = new ServerAaron(3);
-
+		node1.State = ServerState.Leader;
 		var simulation1 = new SimulationNode(node1);
 		var simulaiton2 = new SimulationNode(node2);
 		var simulation3 = new SimulationNode(node3);
@@ -47,6 +48,10 @@ Welcome to your new app.
 
 		nodes = [simulation1, simulaiton2, simulation3];
 		setNetworkDelay();
+		foreach (var node in nodes)
+		{
+			await node.StartSim();
+		}
 		isRunning = true;
 		timer = new Timer(_ =>
 		{
@@ -55,16 +60,14 @@ Welcome to your new app.
 	}
 	void setNetworkDelay()
 	{
-		foreach (var node in nodes)
-		{
-			node.NetworkDelayModifier += 500;
-		}
+
 	}
-	void slowElectionTimer()
+	async Task slowElectionTimer()
 	{
 		foreach (var node in nodes)
 		{
-			node.ElectionTimeoutMultiplier += 10;
+			node.ElectionTimeoutMultiplier = 1 + node.ElectionTimeoutMultiplier;
 		}
+		await Task.CompletedTask;
 	}
 }
