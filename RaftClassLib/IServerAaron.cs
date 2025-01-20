@@ -1,6 +1,7 @@
 ﻿namespace RaftClassLib
 {
-    using System.Timers;
+	using System.Runtime.CompilerServices;
+	using System.Timers;
     public interface IServerAaron
     {
         public ServerState State {get; set;}
@@ -15,7 +16,8 @@
         public List<Vote> Votes { get; set; }
         public List<TermVote> TermVotes { get; set; }
         public List<IServerAaron> OtherServers { get; set; }
-        Task AppendEntries(int senderID, string entry, int term);
+        public List<Log> Logs { get; set; }
+        Task AppendEntries(int senderID, string entry, int term, Operation? command = Operation.None, int? index = -1);
         Task Kill();
         Task RequestVote(int requesterId, int term);
         Task Confirm(int term, int reciverId);
@@ -34,5 +36,15 @@
             RequesterId = requesterId;
             Term = term;
         }
+    }
+    public class Log
+    {
+        public int Term { get; set; }
+        public Operation Command { get; set; }
+	}
+    public enum Operation
+    {
+        Default,
+        None
     }
 }

@@ -22,10 +22,12 @@ public class SimulationNode : IServerAaron
 	public List<Vote> Votes { get => ((IServerAaron)InnerNode).Votes; set => ((IServerAaron)InnerNode).Votes = value; }
 	public List<TermVote> TermVotes { get => ((IServerAaron)InnerNode).TermVotes; set => ((IServerAaron)InnerNode).TermVotes = value; }
 	public List<IServerAaron> OtherServers { get => ((IServerAaron)InnerNode).OtherServers; set => ((IServerAaron)InnerNode).OtherServers = value; }
+	public List<Log> Logs { get => ((IServerAaron)InnerNode).Logs; set => ((IServerAaron)InnerNode).Logs = value; }
 
-	public Task AppendEntries(int senderID, string entry, int term)
+
+	public Task AppendEntries(int senderID, string entry, int term, Operation? command = Operation.Default, int? index = -1)
 	{
-		return ((IServerAaron)InnerNode).AppendEntries(senderID, entry, term);
+		return ((IServerAaron)InnerNode).AppendEntries(senderID, entry, term, command, index);
 	}
 
 	public Task Confirm(int term, int reciverId)

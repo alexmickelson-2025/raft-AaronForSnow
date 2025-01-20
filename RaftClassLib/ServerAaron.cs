@@ -19,6 +19,7 @@ public class ServerAaron : IServerAaron
     public List<Vote> Votes { get; set; }
     public List<TermVote> TermVotes { get; set; }
     public List<IServerAaron> OtherServers { get; set; }
+    public List<Log> Logs { get; set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
     public ServerAaron(int id)
@@ -32,6 +33,7 @@ public class ServerAaron : IServerAaron
 		State = ServerState.Follower;
 		Sentmessages = new List<string>();
 		OtherServers = new List<IServerAaron>();
+        Logs = new List<Log>();
 	}
 
 	public async Task StartSim()
@@ -64,7 +66,7 @@ public class ServerAaron : IServerAaron
     {
         if(State == ServerState.Leader)
         {
-            SelfLog("HB");
+            SelfLog("HB", Operation.None, -1);
             foreach (var server in OtherServers)
             {
                 server.AppendEntries(ID,"HB",Term);
@@ -77,7 +79,7 @@ public class ServerAaron : IServerAaron
 
         State = ServerState.Candidate;
         ++Term;
-        SelfLog("Election Request");
+        SelfLog("Election Request", Operation.None, -1);
         Votes = new List<Vote>() { new Vote(1, true) };
         tallyVotes();
     }
@@ -102,9 +104,11 @@ public class ServerAaron : IServerAaron
         }
         return count;
     }
-    private void SelfLog(string message)
+    private void SelfLog(string message, Operation com, int term)
     {
         Sentmessages.Add(message);
+        if (com is not Operation.None && term != -1)
+            Logs.Add(new Log() { Command = com, Term = term });
     }
     public async Task Kill()
     {
@@ -112,7 +116,7 @@ public class ServerAaron : IServerAaron
         await Task.CompletedTask;
     }
 
-    public async Task AppendEntries(int senderID, string entry, int term)
+    public async Task AppendEntries(int senderID, string entry, int term, Operation? command = Operation.None, int? index = -1)
     {
         await PosibleDelay();
         if (entry == "HB")
@@ -126,15 +130,15 @@ public class ServerAaron : IServerAaron
         {
             LeaderId = senderID;
             State = ServerState.Follower;
-            SelfLog("AppendReceived");
+            SelfLog("AppendReceived", command ?? Operation.None, term);
             ElectionTimer.Stop();
             resetElectionTimer();
             await OtherServers.FirstOrDefault(s => s.ID == senderID)?.Confirm(term, ID);
         }
         else
         {
-            SelfLog($"Leader is {LeaderId}");
-        }
+            SelfLog($"Leader is {LeaderId}", command ?? Operation.None, term);
+		}
     }
 
     private async Task PosibleDelay()
@@ -158,11 +162,11 @@ public class ServerAaron : IServerAaron
 
         if (termVotedId == requesterId) //Repeted Vote
         {
-            SelfLog("Positive Vote");
+            SelfLog("Positive Vote", Operation.None, -1);
         }
         else if (termVotedId != requesterId && termVotedId != 0)
         {
-            SelfLog("Rejected Vote");
+            SelfLog("Rejected Vote", Operation.None, -1);
             await OtherServers.FirstOrDefault(s => s.ID == requesterId)?.ReciveVote(ID, false);
 
         }
@@ -170,7 +174,7 @@ public class ServerAaron : IServerAaron
         {
             TermVotes.Add(new TermVote(requesterId, term));
             await OtherServers.FirstOrDefault(s => s.ID == requesterId)?.ReciveVote(ID, true);
-            SelfLog("Positive Vote");
+            SelfLog("Positive Vote", Operation.None, -1);
 			ElectionTimer.Stop();
 			resetElectionTimer();
 		}

@@ -53,7 +53,6 @@ Welcome to your new app.
 	List<SimulationNode> nodes = [];
 	int NetworkDelay = 10;
 	int ElectionTimer = 1;
-	bool isRunning = false;
 	Timer? timer;
 	async Task startSimulation(){
 		var node1 = new ServerAaron(1);
@@ -74,7 +73,6 @@ Welcome to your new app.
 		{
 			await node.StartSim();
 		}
-		isRunning = true;
 		timer = new Timer(_ =>
 		{
 			InvokeAsync(StateHasChanged);
