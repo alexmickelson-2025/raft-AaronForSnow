@@ -30,6 +30,7 @@ public class ServerAaron : IServerAaron
 		ElectionTimeoutMultiplier = 1;
 		NetworkDelayModifier = 0;
 		TermVotes = new List<TermVote>();
+        Votes = new List<Vote>();
 		State = ServerState.Follower;
 		Sentmessages = new List<string>();
 		OtherServers = new List<IServerAaron>();
@@ -57,7 +58,8 @@ public class ServerAaron : IServerAaron
     }
     private void resetElectionTimer()
     {
-        int interval = Random.Shared.Next(150 * ElectionTimeoutMultiplier, 300 * ElectionTimeoutMultiplier);
+		ElectionTimer.Stop();
+		int interval = Random.Shared.Next(150 * ElectionTimeoutMultiplier, 300 * ElectionTimeoutMultiplier);
         ElectionTimer.Interval = interval;
         ElectionTimer.Start();
     }
@@ -76,12 +78,17 @@ public class ServerAaron : IServerAaron
 
     private void StartElection(object? sender, ElapsedEventArgs? e)
     {
-
-        State = ServerState.Candidate;
+        resetElectionTimer();
+		State = ServerState.Candidate;
         ++Term;
         SelfLog("Election Request", Operation.None, -1);
-        Votes = new List<Vote>() { new Vote(1, true) };
+        Votes = new List<Vote>() { new Vote(ID, true) };
         tallyVotes();
+        foreach (IServerAaron node in OtherServers)
+        {
+            node.RequestVote(ID, Term);
+        }
+
     }
 
     private void tallyVotes()
@@ -121,7 +128,7 @@ public class ServerAaron : IServerAaron
         await PosibleDelay();
         if (entry == "HB")
         {
-			ElectionTimer.Stop();
+			
 			resetElectionTimer();
 			await OtherServers.FirstOrDefault(s => s.ID == senderID)?.HBRecived(ID);
             State = ServerState.Follower;

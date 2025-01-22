@@ -8,6 +8,7 @@ using static System.Formats.Asn1.AsnWriter;
 using System.Xml.Linq;
 using Xunit;
 using Meziantou.Xunit;
+using NSubstitute;
 
 namespace RaftTests;
 
@@ -134,16 +135,27 @@ public class RaftTests
     [Fact]
     public void WhenFolloewerAskedForVoteGetPositiveResponce()
     {
-		IServerAaron fake1;
-		IServerAaron testServer;
+		IServerAaron fake1;//1
+		IServerAaron testServer;//3
 		Tools.SetUpThreeServers(out fake1, out testServer);
-		testServer.RequestVote(2,2); // id, term
+		testServer.RequestVote(fake1.ID,2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
-        Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
+        Assert.Equal(fake1.ID, testServer.TermVotes.Last().RequesterId);
+        fake1.Received(1).ReciveVote(senderID: testServer.ID, true);
         Assert.Contains("Positive Vote", testServer.Sentmessages);
     }
-    // 11. Given a candidate server that just became a candidate, it votes for itself.
+    // 10.5 When I am a candidate I request votes from other servers
     [Fact]
+    public void CadidateVotesRequestVotes()
+    {
+        IServerAaron fake1;
+        IServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		Thread.Sleep(350);
+        fake1.Received(1).RequestVote(testServer.ID,2);
+    }
+		// 11. Given a candidate server that just became a candidate, it votes for itself.
+	[Fact]
     public void WhenBecomesCadidateVotesForSelf()
     {
         IServerAaron fake1;
@@ -151,7 +163,7 @@ public class RaftTests
         Tools.SetUpThreeServers(out fake1, out testServer);
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
-        Assert.Equal(1,testServer.Votes.First().VoterId);
+        Assert.Equal(testServer.ID,testServer.Votes.First().VoterId);
     }
     // 12. Given a candidate, when it receives an AppendEntries message from a node with a later term, then candidate loses and becomes a follower.
     [Fact]
