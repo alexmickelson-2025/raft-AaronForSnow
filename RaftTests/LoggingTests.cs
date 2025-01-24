@@ -1,4 +1,5 @@
 ﻿using NSubstitute;
+using NSubstitute.Core.Arguments;
 using RaftClassLib;
 using System;
 using System.Collections.Generic;
@@ -21,11 +22,17 @@ public class LoggingTests
 	[Fact]
 	public void WhenLeaderGetsCommandFromClientItAddsLogToNextHeartBeat()
 	{
-		testServer.ClientRequest();
+		testServer.ClientRequest("my request");
 		Thread.Sleep(65);
-		AppendEntry entry = new AppendEntry();
-		fake1.Received(1).AppendEntries(entry); //term 2 from server 3
-	}
+		LogEntry entry = new LogEntry(1, Operation.Default, "my request");
+		//AppendEntry entry = new AppendEntry();
+		//AppendEntry recivedEntry = fake1.Sentmessages.;
+		fake1.Received(1);
+		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs[0] == entry)); //term 2 from server 3
+													  //fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.term == 1));
+		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs.Count == 1));
+
+    }
 }
 
 

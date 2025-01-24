@@ -22,19 +22,19 @@ public class SimulationNode : IServerAaron
 	public List<Vote> Votes { get => ((IServerAaron)InnerNode).Votes; set => ((IServerAaron)InnerNode).Votes = value; }
 	public List<TermVote> TermVotes { get => ((IServerAaron)InnerNode).TermVotes; set => ((IServerAaron)InnerNode).TermVotes = value; }
 	public List<IServerAaron> OtherServers { get => ((IServerAaron)InnerNode).OtherServers; set => ((IServerAaron)InnerNode).OtherServers = value; }
-	public List<Log> Logs { get => ((IServerAaron)InnerNode).Logs; set => ((IServerAaron)InnerNode).Logs = value; }
+	public List<LogEntry> Log { get => ((IServerAaron)InnerNode).Log; set => ((IServerAaron)InnerNode).Log = value; }
 
 	public Task AppendEntries(AppendEntry Entry)
 	{
 		return ((IServerAaron)InnerNode).AppendEntries(Entry);
 	}
 
-	public Task ClientRequest()
-	{
-		return ((IServerAaron)InnerNode).ClientRequest();
-	}
+    public Task ClientRequest(string value)
+    {
+        return ((IServerAaron)InnerNode).ClientRequest(value);
+    }
 
-	public Task Confirm(int term, int reciverId)
+    public Task Confirm(int term, int reciverId)
 	{
 		return ((IServerAaron)InnerNode).Confirm(term, reciverId);
 	}

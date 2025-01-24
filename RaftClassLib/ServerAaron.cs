@@ -20,7 +20,8 @@ public class ServerAaron : IServerAaron
     public List<Vote> Votes { get; set; }
     public List<TermVote> TermVotes { get; set; }
     public List<IServerAaron> OtherServers { get; set; }
-    public List<Log> Logs { get; set; }
+    public List<LogEntry> Log { get; set; }
+    private int commitIndex = 0;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
     public ServerAaron(int id)
@@ -35,7 +36,7 @@ public class ServerAaron : IServerAaron
 		State = ServerState.Follower;
 		Sentmessages = new List<string>();
 		OtherServers = new List<IServerAaron>();
-        Logs = new List<Log>();
+        Log = new List<LogEntry>();
 	}
 
 	public async Task StartSim()
@@ -70,12 +71,22 @@ public class ServerAaron : IServerAaron
         if(State == ServerState.Leader)
         {
             SelfLog("HB", Operation.None, -1);
+            List<LogEntry> newEntries = new List<LogEntry>();
+            for (int i = 0; i < Log.Count; i++)
+            {
+                if (i > commitIndex)
+                {
+                    newEntries.Add(Log[i]);
+                }
+            }
             foreach (var server in OtherServers)
             {
-                AppendEntry ent = new AppendEntry() { 
+                AppendEntry ent = new AppendEntry()
+                {
                     senderID = server.ID,
                     entry = "HB",
-                    term = server.Term
+                    term = server.Term,
+                    newLogs = newEntries
                 };
                 server.AppendEntries(ent);
             }
@@ -121,7 +132,7 @@ public class ServerAaron : IServerAaron
     {
         Sentmessages.Add(message);
         if (com is not Operation.None && term != -1)
-            Logs.Add(new Log() { Command = com, Term = term });
+            Log.Add(new LogEntry(term, com, "s"));
     }
     public async Task Kill()
     {
@@ -210,9 +221,13 @@ public class ServerAaron : IServerAaron
         await Task.CompletedTask;
     }
 
-	public Task ClientRequest()
+	public async Task ClientRequest(string value)
 	{
-		throw new NotImplementedException();
+		if (State == ServerState.Leader)
+        {
+            Log.Add(new LogEntry(Term, Operation.Default, value));
+        }
+        await Task.CompletedTask;
 	}
 }
 public enum ServerState

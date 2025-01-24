@@ -16,7 +16,7 @@
         public List<Vote> Votes { get; set; }
         public List<TermVote> TermVotes { get; set; }
         public List<IServerAaron> OtherServers { get; set; }
-        public List<Log> Logs { get; set; }
+        public List<LogEntry> Log { get; set; }
         Task AppendEntries(AppendEntry Entry);
         Task Kill();
         Task RequestVote(int requesterId, int term);
@@ -24,7 +24,7 @@
         Task HBRecived(int reciverId);
         Task ReciveVote(int senderID, bool v);
         Task StartSim();
-        Task ClientRequest();
+        Task ClientRequest(string value);
 
 
 	}
@@ -38,11 +38,7 @@
             Term = term;
         }
     }
-    public class Log
-    {
-        public int Term { get; set; }
-        public Operation Command { get; set; }
-	}
+    
     public enum Operation
     {
         Default,

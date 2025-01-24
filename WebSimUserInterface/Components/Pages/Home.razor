@@ -44,11 +44,11 @@ Welcome to your new app.
 				<li><label>State: </label>@node.State</li>
 				<li><label>Election Timeout: </label>@node.ElectionTimer.Interval ms</li>
 				<li><label>Leader ID: </label>@node.LeaderId</li>
-				@foreach (var vote in node.Votes)
+				@* @foreach (var vote in node.Votes)
 				{
 					<div>Voter Id:  @vote.VoterId</div>
 					<div>Was Positive: @vote.PositiveVote</div>
-				}
+				} *@
 			</ul>
 		</div>
 	}

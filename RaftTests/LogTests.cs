@@ -29,8 +29,8 @@ public class LogTests
 			command = Operation.Default,
 			index = 0
 			});
-		Assert.Single(testServer.Logs);
-		Assert.Equal(Operation.Default, testServer.Logs[0].Command);
-		Assert.Equal(2, testServer.Logs[0].Term);
+		Assert.Single(testServer.Log);
+		Assert.Equal(Operation.Default, testServer.Log[0].Command);
+		Assert.Equal(2, testServer.Log[0].Term);
 	}
 }

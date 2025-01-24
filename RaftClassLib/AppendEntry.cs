@@ -13,4 +13,5 @@ public class AppendEntry
 	public int term { get; set; }
 	public Operation command { get; set; } = Operation.None;
 	public int index { get; set; }
+	public List<LogEntry> newLogs { get; set; } = new List<LogEntry>();
 }
