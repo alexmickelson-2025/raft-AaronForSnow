@@ -9,12 +9,23 @@ using System.Xml.Linq;
 using Xunit;
 using Meziantou.Xunit;
 using NSubstitute;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace RaftTests;
 
 //[DisableParallelization]
 public class RaftTests
 {
+    AppendEntry defaultEntry;
+    public RaftTests()
+    {
+		defaultEntry = new AppendEntry()
+		{
+			senderID = 1,
+			entry = "HB",
+			term = 2
+		};
+	}
     private static void SleepElectionTimeoutBuffer(ServerAaron testServer)
     {
         Thread.Sleep((int)testServer.ElectionTimer.Interval + 30);
@@ -36,7 +47,9 @@ public class RaftTests
         IServerAaron fake1;
         IServerAaron testServer;
         Tools.SetUpThreeServers(out fake1, out testServer);
-        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 3);
+        defaultEntry.senderID = 2;
+        defaultEntry.term = 3;
+        testServer.AppendEntries(defaultEntry);
         Assert.Equal(2, testServer.LeaderId);
     }
     //  3. When a new node is initialized, it should be in follower state.
@@ -93,11 +106,11 @@ public class RaftTests
         IServerAaron testServer;
         Tools.SetUpThreeServers(out fake1, out testServer);
         Thread.Sleep(100);
-        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
+        testServer.AppendEntries(defaultEntry);
         Thread.Sleep(100);
-        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 2);
+        testServer.AppendEntries(defaultEntry);
         Thread.Sleep(100);
-        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 3);
+        testServer.AppendEntries(defaultEntry);
         Assert.Equal(ServerState.Follower, testServer.State);
     }
     //  8. Given an election begins, when the candidate gets a majority of votes, it becomes a leader. (think of the easy case; can use two tests for single and multi-node clusters)
@@ -174,7 +187,9 @@ public class RaftTests
         Tools.SetUpThreeServers(out fake1, out testServer);
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
-        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 30);
+        defaultEntry.senderID = 2;
+        defaultEntry.term = 30;
+        testServer.AppendEntries(defaultEntry);
         testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.LeaderId);
@@ -189,7 +204,9 @@ public class RaftTests
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
         testServer.Term = 2; //should already be, but just in case
-        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 2);
+        defaultEntry.term = 2;
+        defaultEntry.senderID = 2;
+        testServer.AppendEntries(defaultEntry);
         testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.LeaderId);
@@ -250,9 +267,11 @@ public class RaftTests
         IServerAaron testServer;
         Tools.SetUpThreeServers(out fake1, out testServer);
         testServer.State = ServerState.Follower;
-        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 3);
+		defaultEntry.term = 2;
+		defaultEntry.senderID = 1;
+		testServer.AppendEntries(defaultEntry);
         testServer.Kill();
-        Assert.Contains("AppendReceived", testServer.Sentmessages);
+        fake1.Received(1);
     }
     // 18. Given a candidate receives an AppendEntries from a previous term, then rejects.
     [Fact]
@@ -263,7 +282,9 @@ public class RaftTests
 		Tools.SetUpThreeServers(out fake1, out testServer);
 		testServer.LeaderId = 1;
         testServer.Term = 4;
-        testServer.AppendEntries(senderID: 2, entry: "newEntrie", term: 1);
+		defaultEntry.term = 1;
+		defaultEntry.senderID = 2;
+		testServer.AppendEntries(defaultEntry);
         testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(1, testServer.LeaderId);

@@ -1,6 +1,7 @@
 ﻿
 namespace RaftClassLib;
 
+using Castle.Components.DictionaryAdapter.Xml;
 using System;
 using System.Timers;
 public class ServerAaron : IServerAaron
@@ -71,7 +72,12 @@ public class ServerAaron : IServerAaron
             SelfLog("HB", Operation.None, -1);
             foreach (var server in OtherServers)
             {
-                server.AppendEntries(ID,"HB",Term);
+                AppendEntry ent = new AppendEntry() { 
+                    senderID = server.ID,
+                    entry = "HB",
+                    term = server.Term
+                };
+                server.AppendEntries(ent);
             }
         }
     }
@@ -123,28 +129,31 @@ public class ServerAaron : IServerAaron
         await Task.CompletedTask;
     }
 
-    public async Task AppendEntries(int senderID, string entry, int term, Operation? command = Operation.None, int? index = -1)
+    public async Task AppendEntries(AppendEntry Entry)
     {
         await PosibleDelay();
-        if (entry == "HB")
+        IServerAaron sender = OtherServers.FirstOrDefault(s => s.ID == Entry.senderID) ?? new ServerAaron(-1);
+        if (Entry.entry == "HB" && Entry.term >= Term)
         {
-			
+			LeaderId = Entry.senderID;
 			resetElectionTimer();
-			await OtherServers.FirstOrDefault(s => s.ID == senderID)?.HBRecived(ID);
+			if (sender.ID != -1)
+			    await sender.HBRecived(ID);
             State = ServerState.Follower;
         }
-        else if (term >= Term)
+        else if (Entry.term >= Term)
         {
-            LeaderId = senderID;
+            LeaderId = Entry.senderID;
             State = ServerState.Follower;
-            SelfLog("AppendReceived", command ?? Operation.None, term);
+            SelfLog("AppendReceived", Entry.command, Entry.term);
             ElectionTimer.Stop();
             resetElectionTimer();
-            await OtherServers.FirstOrDefault(s => s.ID == senderID)?.Confirm(term, ID);
-        }
+            if (sender.ID != -1)
+                await sender.Confirm(Entry.term, ID);
+		}
         else
         {
-            SelfLog($"Leader is {LeaderId}", command ?? Operation.None, term);
+            SelfLog($"Leader is {LeaderId}", Entry.command, Entry.term);
 		}
     }
 
@@ -166,21 +175,22 @@ public class ServerAaron : IServerAaron
     public async Task RequestVote(int requesterId, int term)
     {
         int termVotedId = TermVotes.FirstOrDefault(t => t.Term == term)?.RequesterId ?? 0;
-
-        if (termVotedId == requesterId) //Repeted Vote
+		IServerAaron sender = OtherServers.FirstOrDefault(s => s.ID == requesterId) ?? new ServerAaron(-1);
+		if (termVotedId == requesterId) //Repeted Vote
         {
             SelfLog("Positive Vote", Operation.None, -1);
         }
         else if (termVotedId != requesterId && termVotedId != 0)
         {
             SelfLog("Rejected Vote", Operation.None, -1);
-            await OtherServers.FirstOrDefault(s => s.ID == requesterId)?.ReciveVote(ID, false);
-
+            if (sender.ID != -1)
+                await sender.ReciveVote(ID, false);
         }
         else // no votes for that term yet
         {
             TermVotes.Add(new TermVote(requesterId, term));
-            await OtherServers.FirstOrDefault(s => s.ID == requesterId)?.ReciveVote(ID, true);
+			if (sender.ID != -1)
+				await sender.ReciveVote(ID, true);
             SelfLog("Positive Vote", Operation.None, -1);
 			ElectionTimer.Stop();
 			resetElectionTimer();
@@ -199,6 +209,11 @@ public class ServerAaron : IServerAaron
         await PosibleDelay();
         await Task.CompletedTask;
     }
+
+	public Task ClientRequest()
+	{
+		throw new NotImplementedException();
+	}
 }
 public enum ServerState
 {

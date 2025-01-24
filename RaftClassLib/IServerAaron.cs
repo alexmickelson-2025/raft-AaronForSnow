@@ -17,16 +17,17 @@
         public List<TermVote> TermVotes { get; set; }
         public List<IServerAaron> OtherServers { get; set; }
         public List<Log> Logs { get; set; }
-        Task AppendEntries(int senderID, string entry, int term, Operation? command = Operation.None, int? index = -1);
+        Task AppendEntries(AppendEntry Entry);
         Task Kill();
         Task RequestVote(int requesterId, int term);
         Task Confirm(int term, int reciverId);
         Task HBRecived(int reciverId);
         Task ReciveVote(int senderID, bool v);
         Task StartSim();
+        Task ClientRequest();
 
 
-    }
+	}
     public class TermVote
     {
         public readonly int RequesterId;

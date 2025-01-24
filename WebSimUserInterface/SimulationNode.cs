@@ -24,10 +24,14 @@ public class SimulationNode : IServerAaron
 	public List<IServerAaron> OtherServers { get => ((IServerAaron)InnerNode).OtherServers; set => ((IServerAaron)InnerNode).OtherServers = value; }
 	public List<Log> Logs { get => ((IServerAaron)InnerNode).Logs; set => ((IServerAaron)InnerNode).Logs = value; }
 
-
-	public Task AppendEntries(int senderID, string entry, int term, Operation? command = Operation.Default, int? index = -1)
+	public Task AppendEntries(AppendEntry Entry)
 	{
-		return ((IServerAaron)InnerNode).AppendEntries(senderID, entry, term, command, index);
+		return ((IServerAaron)InnerNode).AppendEntries(Entry);
+	}
+
+	public Task ClientRequest()
+	{
+		return ((IServerAaron)InnerNode).ClientRequest();
 	}
 
 	public Task Confirm(int term, int reciverId)
