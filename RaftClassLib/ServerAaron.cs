@@ -21,7 +21,7 @@ public class ServerAaron : IServerAaron
     public List<TermVote> TermVotes { get; set; }
     public List<IServerAaron> OtherServers { get; set; }
     public List<LogEntry> Log { get; set; }
-    private int commitIndex = 0;
+    private int commitIndex = -1;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
     public ServerAaron(int id)
@@ -71,6 +71,7 @@ public class ServerAaron : IServerAaron
         if(State == ServerState.Leader)
         {
             SelfLog("HB", Operation.None, -1);
+            resetElectionTimer();
             List<LogEntry> newEntries = new List<LogEntry>();
             for (int i = 0; i < Log.Count; i++)
             {
@@ -81,13 +82,7 @@ public class ServerAaron : IServerAaron
             }
             foreach (var server in OtherServers)
             {
-                AppendEntry ent = new AppendEntry()
-                {
-                    senderID = server.ID,
-                    entry = "HB",
-                    term = server.Term,
-                    newLogs = newEntries
-                };
+                AppendEntry ent = new AppendEntry(ID, "HB", Term, Operation.Default, commitIndex, newEntries);
                 server.AppendEntries(ent);
             }
         }
@@ -132,11 +127,13 @@ public class ServerAaron : IServerAaron
     {
         Sentmessages.Add(message);
         if (com is not Operation.None && term != -1)
-            Log.Add(new LogEntry(term, com, "s"));
+            Log.Add(new LogEntry(term, com, message));
     }
     public async Task Kill()
     {
         IsLive = false;
+        HBTimer.Stop();
+        ElectionTimer.Stop();
         await Task.CompletedTask;
     }
 

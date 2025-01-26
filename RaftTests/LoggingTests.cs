@@ -22,17 +22,22 @@ public class LoggingTests
 	[Fact]
 	public void WhenLeaderGetsCommandFromClientItAddsLogToNextHeartBeat()
 	{
+		testServer.State = ServerState.Leader;
+		testServer.Term = 1;
 		testServer.ClientRequest("my request");
 		Thread.Sleep(65);
+		testServer.Kill();
 		LogEntry entry = new LogEntry(1, Operation.Default, "my request");
-		//AppendEntry entry = new AppendEntry();
-		//AppendEntry recivedEntry = fake1.Sentmessages.;
-		fake1.Received(1);
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs[0] == entry)); //term 2 from server 3
-													  //fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.term == 1));
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs.Count == 1));
+		Assert.Single(testServer.Sentmessages);
 
-    }
+		Assert.Equal("HB", testServer.Sentmessages[0]);
+		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs.Count == 1));
+		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.term == 1)); //term 1 from server 3
+		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs[0] == entry)); //term 1 from server 3
+																						  //fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.term == 1));
+																						  //	fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs.Count == 1));
+
+	}
 }
 
 

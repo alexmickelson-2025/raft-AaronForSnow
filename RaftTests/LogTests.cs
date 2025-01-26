@@ -22,13 +22,7 @@ public class LogTests
 	{
 		IServerAaron testServer = new ServerAaron(1);
 		testServer.AppendEntries(
-			new AppendEntry() {
-			senderID = 1,
-			entry = "test Log",
-			term = 2,
-			command = Operation.Default,
-			index = 0
-			});
+			new AppendEntry(1, "test log", 2, Operation.Default, 0, new List<LogEntry>()));
 		Assert.Single(testServer.Log);
 		Assert.Equal(Operation.Default, testServer.Log[0].Command);
 		Assert.Equal(2, testServer.Log[0].Term);

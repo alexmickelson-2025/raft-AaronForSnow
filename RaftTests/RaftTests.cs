@@ -19,12 +19,7 @@ public class RaftTests
     AppendEntry defaultEntry;
     public RaftTests()
     {
-		defaultEntry = new AppendEntry()
-		{
-			senderID = 1,
-			entry = "HB",
-			term = 2
-		};
+		defaultEntry = new AppendEntry(1,"HB", 2, Operation.None, 0, new List<LogEntry>());
 	}
     private static void SleepElectionTimeoutBuffer(ServerAaron testServer)
     {
@@ -47,9 +42,8 @@ public class RaftTests
         IServerAaron fake1;
         IServerAaron testServer;
         Tools.SetUpThreeServers(out fake1, out testServer);
-        defaultEntry.senderID = 2;
-        defaultEntry.term = 3;
-        testServer.AppendEntries(defaultEntry);
+        defaultEntry = new AppendEntry(2, "HB", 3, Operation.None, 0, new List<LogEntry>());
+		testServer.AppendEntries(defaultEntry);
         Assert.Equal(2, testServer.LeaderId);
     }
     //  3. When a new node is initialized, it should be in follower state.
@@ -187,9 +181,8 @@ public class RaftTests
         Tools.SetUpThreeServers(out fake1, out testServer);
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
-        defaultEntry.senderID = 2;
-        defaultEntry.term = 30;
-        testServer.AppendEntries(defaultEntry);
+		defaultEntry = new AppendEntry(2, "HB", 30, Operation.None, 0, new List<LogEntry>());
+		testServer.AppendEntries(defaultEntry);
         testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.LeaderId);
@@ -204,9 +197,8 @@ public class RaftTests
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
         testServer.Term = 2; //should already be, but just in case
-        defaultEntry.term = 2;
-        defaultEntry.senderID = 2;
-        testServer.AppendEntries(defaultEntry);
+		defaultEntry = new AppendEntry(2, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		testServer.AppendEntries(defaultEntry);
         testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.LeaderId);
@@ -267,8 +259,6 @@ public class RaftTests
         IServerAaron testServer;
         Tools.SetUpThreeServers(out fake1, out testServer);
         testServer.State = ServerState.Follower;
-		defaultEntry.term = 2;
-		defaultEntry.senderID = 1;
 		testServer.AppendEntries(defaultEntry);
         testServer.Kill();
         fake1.Received(1);
@@ -282,8 +272,6 @@ public class RaftTests
 		Tools.SetUpThreeServers(out fake1, out testServer);
 		testServer.LeaderId = 1;
         testServer.Term = 4;
-		defaultEntry.term = 1;
-		defaultEntry.senderID = 2;
 		testServer.AppendEntries(defaultEntry);
         testServer.Kill();
         Assert.Equal(ServerState.Follower, testServer.State);
