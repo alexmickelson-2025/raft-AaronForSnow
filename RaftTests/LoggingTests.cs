@@ -32,11 +32,26 @@ public class LoggingTests
 
 		Assert.Equal("HB", testServer.Sentmessages[0]);
 		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs.Count == 1));
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.term == 1)); //term 1 from server 3
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs[0] == entry)); //term 1 from server 3
-																						  //fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.term == 1));
-																						  //	fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs.Count == 1));
-
+		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.term == 1)); 
+		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs[0] == entry)); 
+	}
+	// 2. when a leader receives a command from the client, it is appended to its log
+	[Fact]
+	public void WhenLeaderGetsCommandFromClientItAddsTOLog()
+	{
+		testServer.State = ServerState.Leader;
+		testServer.Term = 1;
+		testServer.ClientRequest("my request for This Test");
+		testServer.Kill();
+		LogEntry entry = new LogEntry(1, Operation.Default, "my request for This Test");
+		Assert.Empty(testServer.Sentmessages);
+		Assert.Equal("my request for This Test", testServer.Log[0].uniqueValue);
+	}
+	// 3. when a node is new, its log is empty]
+	[Fact]
+	public void WhenNodeIsNewLogIsEmpty()
+	{
+		Assert.Empty(testServer.Log);
 	}
 }
 
