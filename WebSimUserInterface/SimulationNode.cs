@@ -46,9 +46,9 @@ public class SimulationNode : IServerAaron
 		return ((IServerAaron)InnerNode).HBRecived(reciverId);
 	}
 
-	public Task Kill()
+	public Task Stop()
 	{
-		return ((IServerAaron)InnerNode).Kill();
+		return ((IServerAaron)InnerNode).Stop();
 	}
 
 	public Task ReciveVote(int senderID, bool v)

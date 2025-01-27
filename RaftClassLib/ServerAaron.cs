@@ -136,7 +136,7 @@ public class ServerAaron : IServerAaron
         if (com is not Operation.None && term != -1)
             Log.Add(new LogEntry(term, com, message));
     }
-    public async Task Kill()
+    public async Task Stop()
     {
         IsLive = false;
         HBTimer.Stop();

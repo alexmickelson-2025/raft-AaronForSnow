@@ -20,7 +20,7 @@
         public List<IServerAaron> OtherServers { get; set; }
         public List<LogEntry> Log { get; set; }
         Task AppendEntries(AppendEntry Entry);
-        Task Kill();
+        Task Stop();
         Task RequestVote(int requesterId, int term);
         Task Confirm(int term, int reciverId);
         Task HBRecived(int reciverId);

@@ -183,7 +183,7 @@ public class RaftTests
         Assert.Equal(ServerState.Candidate, testServer.State);
 		defaultEntry = new AppendEntry(2, "HB", 30, Operation.None, 0, new List<LogEntry>());
 		testServer.AppendEntries(defaultEntry);
-        testServer.Kill();
+        testServer.Stop();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.LeaderId);
     }
@@ -199,7 +199,7 @@ public class RaftTests
         testServer.Term = 2; //should already be, but just in case
 		defaultEntry = new AppendEntry(2, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		testServer.AppendEntries(defaultEntry);
-        testServer.Kill();
+        testServer.Stop();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.LeaderId);
     }
@@ -260,7 +260,7 @@ public class RaftTests
         Tools.SetUpThreeServers(out fake1, out testServer);
         testServer.State = ServerState.Follower;
 		testServer.AppendEntries(defaultEntry);
-        testServer.Kill();
+        testServer.Stop();
         fake1.Received(1);
     }
     // 18. Given a candidate receives an AppendEntries from a previous term, then rejects.
@@ -273,7 +273,7 @@ public class RaftTests
 		testServer.LeaderId = 1;
         testServer.Term = 4;
 		testServer.AppendEntries(defaultEntry);
-        testServer.Kill();
+        testServer.Stop();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(1, testServer.LeaderId);
         Assert.Contains("Leader is 1", testServer.Sentmessages); // act of rejecting

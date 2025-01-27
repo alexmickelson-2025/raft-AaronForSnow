@@ -84,4 +84,5 @@ public class TalkingTests
 		Assert.Equal(1, testServer.TermVotes.Last().RequesterId);
         fake1.Received(1).ReciveVote(3, true);
 	}
+
 }

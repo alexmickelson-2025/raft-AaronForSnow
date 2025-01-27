@@ -26,7 +26,7 @@ public class LoggingTests
 		testServer.Term = 1;
 		testServer.ClientRequest("my request");
 		Thread.Sleep(65);
-		testServer.Kill();
+		testServer.Stop();
 		LogEntry entry = new LogEntry(1, Operation.Default, "my request");
 		Assert.Single(testServer.Sentmessages);
 
@@ -42,7 +42,7 @@ public class LoggingTests
 		testServer.State = ServerState.Leader;
 		testServer.Term = 1;
 		testServer.ClientRequest("my request for This Test");
-		testServer.Kill();
+		testServer.Stop();
 		LogEntry entry = new LogEntry(1, Operation.Default, "my request for This Test");
 		Assert.Empty(testServer.Sentmessages);
 		Assert.Equal("my request for This Test", testServer.Log[0].uniqueValue);
