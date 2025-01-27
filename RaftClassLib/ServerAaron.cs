@@ -21,7 +21,8 @@ public class ServerAaron : IServerAaron
     public List<TermVote> TermVotes { get; set; }
     public List<IServerAaron> OtherServers { get; set; }
     public List<LogEntry> Log { get; set; }
-    private int commitIndex = -1;
+    public int commitIndex { get; set; } = -1;
+    public List<int> nextIndexes { get; set; } = new List<int>();
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
     public ServerAaron(int id)
@@ -108,6 +109,12 @@ public class ServerAaron : IServerAaron
         if (positiveVotes() > NumServers / 2)
         {
             State = ServerState.Leader;
+            nextIndexes = new List<int>();
+            foreach( IServerAaron node in OtherServers)
+            {
+                nextIndexes.Add(0);
+                node.AppendEntries(new AppendEntry(ID, "REQUEST COMMIT INDEX", Term, Operation.None, commitIndex, new List<LogEntry>(), 0));
+            }
             sendHeartBeet(null, null);
         }
     }
@@ -176,7 +183,10 @@ public class ServerAaron : IServerAaron
     public async Task ReciveVote(int senderID, bool positveVote)
     {
         Votes.Add(new Vote(senderID, positveVote));
-        tallyVotes();
+        if (State != ServerState.Leader)
+        {
+            tallyVotes();
+        }
         await Task.CompletedTask;
     }
 

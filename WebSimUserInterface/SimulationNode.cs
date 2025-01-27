@@ -23,6 +23,8 @@ public class SimulationNode : IServerAaron
 	public List<TermVote> TermVotes { get => ((IServerAaron)InnerNode).TermVotes; set => ((IServerAaron)InnerNode).TermVotes = value; }
 	public List<IServerAaron> OtherServers { get => ((IServerAaron)InnerNode).OtherServers; set => ((IServerAaron)InnerNode).OtherServers = value; }
 	public List<LogEntry> Log { get => ((IServerAaron)InnerNode).Log; set => ((IServerAaron)InnerNode).Log = value; }
+	public int commitIndex { get => ((IServerAaron)InnerNode).commitIndex; set => ((IServerAaron)InnerNode).commitIndex = value; }
+	public List<int> nextIndexes { get => ((IServerAaron)InnerNode).nextIndexes; set => ((IServerAaron)InnerNode).nextIndexes = value; }
 
 	public Task AppendEntries(AppendEntry Entry)
 	{

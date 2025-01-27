@@ -21,4 +21,5 @@ public record AppendEntry (
 	int term,
 	Operation command,
 	int commitedIndex,
-	List<LogEntry> newLogs);
+	List<LogEntry> newLogs,
+	int nextIndex = 0);
