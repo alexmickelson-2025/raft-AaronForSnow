@@ -21,6 +21,7 @@ public class LogTests
 	public void LogEntryContainsComponents()
 	{
 		IServerAaron testServer = new ServerAaron(1);
+		testServer.StartSim();
 		testServer.AppendEntries(
 			new AppendEntry(1, "test log", 2, Operation.Default, 0, new List<LogEntry>()));
 		Assert.Single(testServer.Log);

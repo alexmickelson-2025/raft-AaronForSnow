@@ -148,6 +148,7 @@ public class ServerAaron : IServerAaron
 
     public async Task AppendEntries(AppendEntry Entry)
     {
+        if (!IsLive) { return; }
         await PosibleDelay();
         IServerAaron sender = OtherServers.FirstOrDefault(s => s.ID == Entry.senderID) ?? new ServerAaron(-1);
         if (Entry.entry == "HB" && Entry.term >= Term)
@@ -187,6 +188,7 @@ public class ServerAaron : IServerAaron
 
     public async Task ReciveVote(int senderID, bool positveVote)
     {
+        if (!IsLive) { return; }
         Votes.Add(new Vote(senderID, positveVote));
         if (State != ServerState.Leader)
         {
@@ -197,6 +199,7 @@ public class ServerAaron : IServerAaron
 
     public async Task RequestVote(int requesterId, int term)
     {
+        if (!IsLive) { return; }
         int termVotedId = TermVotes.FirstOrDefault(t => t.Term == term)?.RequesterId ?? 0;
 		IServerAaron sender = OtherServers.FirstOrDefault(s => s.ID == requesterId) ?? new ServerAaron(-1);
 		if (termVotedId == requesterId) //Repeted Vote
@@ -235,7 +238,8 @@ public class ServerAaron : IServerAaron
 
 	public async Task ClientRequest(string value)
 	{
-		if (State == ServerState.Leader)
+        if (!IsLive) { return; }
+        if (State == ServerState.Leader)
         {
             Log.Add(new LogEntry(Term, Operation.Default, value));
         }

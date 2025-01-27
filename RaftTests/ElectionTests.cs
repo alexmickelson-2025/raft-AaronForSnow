@@ -14,10 +14,10 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 namespace RaftTests;
 
 //[DisableParallelization]
-public class RaftTests
+public class ElectionTests
 {
     AppendEntry defaultEntry;
-    public RaftTests()
+    public ElectionTests()
     {
 		defaultEntry = new AppendEntry(1,"HB", 2, Operation.None, 0, new List<LogEntry>());
 	}

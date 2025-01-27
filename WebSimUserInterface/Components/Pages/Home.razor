@@ -19,8 +19,8 @@ Welcome to your new app.
 
 
 				<input type="range" id="speed" name="speed" min="1" max="150" @bind:event="oninput"
-					   @bind=ElectionTimer @onchange=setElectionTimer />
-					</label>
+				@bind=ElectionTimer @onchange=setElectionTimer />
+			</label>
 		</div>
 		<div>
 
@@ -29,7 +29,7 @@ Welcome to your new app.
 
 
 				<input type="range" id="speed" name="speed" min="10" max="10000" @bind:event="oninput"
-					   @bind=NetworkDelay @onchange=setNetworkDelay />
+				@bind=NetworkDelay @onchange=setNetworkDelay />
 			</label>
 		</div>
 	</div>
@@ -38,6 +38,17 @@ Welcome to your new app.
 	@foreach (var node in nodes)
 	{
 		<div style="border: 1px solid #ccc; padding: 10px; width: 200px;">
+			<button @onclick='async () => { await SwapSimState(node);}'>
+				@if (node.IsLive)
+				{
+					<>"Stop"</>
+				}
+				else
+				{
+					<>"Start"</>
+				}
+
+			</button>
 			<ul style="list-style-type: none; padding-left: 0;">
 				<li><label>ID: </label>@node.ID</li>
 				<li><label>Term: </label>@node.Term</li>
@@ -102,5 +113,14 @@ Welcome to your new app.
 	public static string FormatMilliSeconds(double milliSeconds)
 	{
 		return $"{milliSeconds / 1000.0:F1}";
+	}
+	async Task SwapSimState(SimulationNode node){
+
+		if (node.IsLive ){
+			await node.Stop();
+		}
+		else {
+			await node.StartSim();
+		}
 	}
 }
