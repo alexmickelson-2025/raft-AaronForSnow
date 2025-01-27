@@ -91,6 +91,8 @@ public class ServerAaron : IServerAaron
 
     private void StartElection(object? sender, ElapsedEventArgs? e)
     {
+        if (State == ServerState.Leader)
+            return;
         resetElectionTimer();
 		State = ServerState.Candidate;
         ++Term;
@@ -156,12 +158,15 @@ public class ServerAaron : IServerAaron
 			    await sender.HBRecived(ID);
             State = ServerState.Follower;
         }
+        if (Entry.entry == "REQUEST COMMIT INDEX" && State == ServerState.Leader)
+        {
+
+        }
         else if (Entry.term >= Term)
         {
             LeaderId = Entry.senderID;
             State = ServerState.Follower;
             SelfLog("AppendReceived", Entry.command, Entry.term);
-            ElectionTimer.Stop();
             resetElectionTimer();
             if (sender.ID != -1)
                 await sender.Confirm(Entry.term, ID);
