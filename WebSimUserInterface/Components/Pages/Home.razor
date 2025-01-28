@@ -87,6 +87,7 @@ Welcome to your new app.
 		setNetworkDelay();
 		foreach (var node in nodes)
 		{
+			node.nextIndexes = new List<int>() {0,0};
 			await node.StartSimAsync();
 		}
 		timer = new Timer(_ =>
