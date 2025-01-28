@@ -15,6 +15,7 @@ public class TalkingTests
 	public TalkingTests() {
         
         Tools.SetUpThreeServers(out fake1, out testServer);
+        testServer.nextIndexes = new List<int>() { 0,0 };
         defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 	}
     [Fact]

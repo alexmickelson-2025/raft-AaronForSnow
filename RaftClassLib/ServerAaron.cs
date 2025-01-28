@@ -55,8 +55,8 @@ public class ServerAaron : IServerAaron
 		ElectionTimer.AutoReset = true;
 		ElectionTimer.Start();
 		HBTimer = new Timer(50);
-        HBTimer.Elapsed += sendHeartBeet;
-        HBTimer.AutoReset = true;
+        HBTimer.Elapsed += async (sender, e) => await sendHeartBeet(sender, e);
+		HBTimer.AutoReset = true;
         HBTimer.Start();
     }
     private void resetElectionTimer()
@@ -67,23 +67,28 @@ public class ServerAaron : IServerAaron
         ElectionTimer.Start();
     }
 
-    private void sendHeartBeet(object? sender, ElapsedEventArgs? e)
+    private async Task sendHeartBeet(object? sender, ElapsedEventArgs? e)
     {
         if(State == ServerState.Leader)
         {
             SelfLog("HB", Operation.None, -1);
-            resetElectionTimer();
-            List<LogEntry> newEntries = new List<LogEntry>();
-            for (int i = 0; i < Log.Count; i++)
-            {
-                if (i > commitIndex)
-                {
-                    newEntries.Add(Log[i]);
-                }
-            }
+            //List<LogEntry> newEntries = new List<LogEntry>();
+            //for (int i = 0; i < Log.Count; i++)
+            //{
+            //    if (i > commitIndex)
+            //    {
+            //        newEntries.Add(Log[i]);
+            //    }
+            //}
             foreach (var server in OtherServers)
             {
-                AppendEntry ent = new AppendEntry(ID, "HB", Term, Operation.Default, commitIndex, newEntries);
+				int indexInIndexes = getServerPositionInNextIndexes(server.ID);
+				List<LogEntry> newEntries = new List<LogEntry>();
+				for (int i = nextIndexes[indexInIndexes]; i < Log.Count; i++)
+				{
+					newEntries.Add(Log[i]);
+				}
+				AppendEntry ent = new AppendEntry(ID, "HB", Term, Operation.Default, commitIndex, newEntries, Log.Count);
                 server.AppendEntries(ent);
             }
         }
@@ -160,7 +165,12 @@ public class ServerAaron : IServerAaron
             var message = new AppendEntry(ID, "COMMIT INDEX RESPONCE", Term, Operation.None, commitIndex, new List<LogEntry>() , Log.Count);
             await sender.AppendEntries(message);
         }
-        else if (Entry.term >= Term)
+        else if (Entry.entry == "COMMIT INDEX RESPONCE" && State == ServerState.Leader)
+		{
+			int indexInIndexes = getServerPositionInNextIndexes(Entry.senderID);
+			nextIndexes[indexInIndexes] = Entry.nextIndex;
+		}
+		else if (Entry.term >= Term)
 		{
 			await acceptNormalAppendEntrie(Entry, sender);
 		}
@@ -169,6 +179,18 @@ public class ServerAaron : IServerAaron
             SelfLog($"Leader is {LeaderId}", Entry.command, Entry.term);
 		}
     }
+
+	private int getServerPositionInNextIndexes(int senderID)
+	{
+		var indexInIndexes = 0;
+		while (indexInIndexes < OtherServers.Count)
+		{
+			if (OtherServers[indexInIndexes].ID == senderID) { break; }
+			indexInIndexes++;
+		}
+
+		return indexInIndexes;
+	}
 
 	private async Task acceptNormalAppendEntrie(AppendEntry Entry, IServerAaron sender)
 	{

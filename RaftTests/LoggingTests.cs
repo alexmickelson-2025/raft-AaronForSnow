@@ -15,8 +15,8 @@ public class LoggingTests
 	IServerAaron testServer;
 	public LoggingTests()
 	{
-
 		Tools.SetUpThreeServers(out fake1, out testServer);
+		testServer.nextIndexes = new List<int>() { 0,0 };
 	}
 	// 1. when a leader receives a client command the leader sends the log entry in the next appendentries RPC to all nodes
 	[Fact]
@@ -37,12 +37,12 @@ public class LoggingTests
 	}
 	// 2. when a leader receives a command from the client, it is appended to its log
 	[Fact]
-	public void WhenLeaderGetsCommandFromClientItAddsTOLog()
+	public async Task WhenLeaderGetsCommandFromClientItAddsTOLog()
 	{
 		testServer.State = ServerState.Leader;
 		testServer.Term = 1;
-		testServer.ClientRequest("my request for This Test");
-		testServer.Stop();
+		await testServer.ClientRequest("my request for This Test");
+		await testServer.Stop();
 		LogEntry entry = new LogEntry(1, Operation.Default, "my request for This Test");
 		Assert.Empty(testServer.Sentmessages);
 		Assert.Equal("my request for This Test", testServer.Log[0].uniqueValue);
@@ -55,19 +55,30 @@ public class LoggingTests
 	}
 	// 4. when a leader wins an election, it initializes the nextIndex for each follower to the index just after the last one it its log
 	[Fact]
-	public void WhenLeaderElectedItMatchesNextIndexForEachFollowerToItsLog()
+	public async Task WhenLeaderElectedItMatchesNextIndexForEachFollowerToItsLog()
 	{
 		testServer.Log = [
-			new LogEntry(1,Operation.None, "first"),
-			new LogEntry(1,Operation.None, "second"),
-			new LogEntry(2,Operation.None, "third"),
-			new LogEntry(2,Operation.None, "fourth"),
-			new LogEntry(2,Operation.None, "fith"),
+			new LogEntry(1,Operation.None, "first"), //0
+			new LogEntry(1,Operation.None, "second"), //1
+			new LogEntry(2,Operation.None, "third"),//2
+			new LogEntry(2,Operation.None, "fourth"),//3
+			new LogEntry(2,Operation.None, "fith"),//4
 		];
 		testServer.commitIndex = 3;
+		testServer.Term = 3;
 		testServer.State = ServerState.Leader;
-		testServer.nextIndexes = [4, 5];
-		// TODO: Finish This One
+		//testServer.nextIndexes = [4, 5]; // first server needs one more log Second is caught up, should be set when call as COMMIT INDEX RESPONCE
+		await testServer.AppendEntries(new AppendEntry(1, "COMMIT INDEX RESPONCE", 3, Operation.None, 3, new List<LogEntry>(), 4));
+		Thread.Sleep(60); //so it sends at next heart beat
+		await testServer.Stop();
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.commitedIndex == 3));
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.term == 3));
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.entry == "HB"));
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.nextIndex == 5));
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs.Count == 1));
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs[0].Term == 2));
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs[0].uniqueValue == "fith"));
+
 	}
 	[Fact]
 	public void WhenElectedLeaderInitializesNextIndexList()
