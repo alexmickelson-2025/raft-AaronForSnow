@@ -152,33 +152,44 @@ public class ServerAaron : IServerAaron
         await PosibleDelay();
         IServerAaron sender = OtherServers.FirstOrDefault(s => s.ID == Entry.senderID) ?? new ServerAaron(-1);
         if (Entry.entry == "HB" && Entry.term >= Term)
+		{
+			await respondToHeartBeet(Entry, sender);
+		}
+		if (Entry.entry == "REQUEST COMMIT INDEX" && State == ServerState.Follower)
         {
-			LeaderId = Entry.senderID;
-			resetElectionTimer();
-			if (sender.ID != -1)
-			    await sender.HBRecived(ID);
-            State = ServerState.Follower;
-        }
-        if (Entry.entry == "REQUEST COMMIT INDEX" && State == ServerState.Leader)
-        {
-
+            var message = new AppendEntry(ID, "COMMIT INDEX RESPONCE", Term, Operation.None, commitIndex, new List<LogEntry>() , Log.Count);
+            await sender.AppendEntries(message);
         }
         else if (Entry.term >= Term)
-        {
-            LeaderId = Entry.senderID;
-            State = ServerState.Follower;
-            SelfLog("AppendReceived", Entry.command, Entry.term);
-            resetElectionTimer();
-            if (sender.ID != -1)
-                await sender.Confirm(Entry.term, ID);
+		{
+			await acceptNormalAppendEntrie(Entry, sender);
 		}
-        else
+		else
         {
             SelfLog($"Leader is {LeaderId}", Entry.command, Entry.term);
 		}
     }
 
-    private async Task PosibleDelay()
+	private async Task acceptNormalAppendEntrie(AppendEntry Entry, IServerAaron sender)
+	{
+		LeaderId = Entry.senderID;
+		State = ServerState.Follower;
+		SelfLog("AppendReceived", Entry.command, Entry.term);
+		resetElectionTimer();
+		if (sender.ID != -1)
+		{ await sender.Confirm(Entry.term, ID); }
+	}
+
+	private async Task respondToHeartBeet(AppendEntry Entry, IServerAaron sender)
+	{
+		LeaderId = Entry.senderID;
+		resetElectionTimer();
+		if (sender.ID != -1)
+			await sender.HBRecived(ID);
+		State = ServerState.Follower;
+	}
+
+	private async Task PosibleDelay()
     {
         if (NetworkDelayModifier != 0)
         {

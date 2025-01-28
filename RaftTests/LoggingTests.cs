@@ -96,10 +96,10 @@ public class LoggingTests
 		testServer.Log.Add(new LogEntry(1,Operation.None, "first"));
 		testServer.commitIndex = 1;
 		testServer.AppendEntries(new AppendEntry(1, "REQUEST COMMIT INDEX", 2, Operation.None, 3, new List<LogEntry>(), 0));
-		//fake1.Received(1).AppendEntries(new AppendEntry(3, "COMMIT INDEX RESPONCE", 2, Operation.None, 1, new List<LogEntry>(), 2));
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.entry == "COMMIT INDEX RESPONCE"));
+		//fake1.Received(1).AppendEntries(new AppendEntry(3, "COMMIT INDEX RESPONCE", 2, Operation.None, 1, new List<LogEntry>(), 1));
 		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.commitedIndex == 1));
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.nextIndex == 2));
+		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.nextIndex == 1));
+		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.entry == "COMMIT INDEX RESPONCE"));
 	}
 }
 
