@@ -20,20 +20,20 @@ public class LoggingTests
 	}
 	// 1. when a leader receives a client command the leader sends the log entry in the next appendentries RPC to all nodes
 	[Fact]
-	public void WhenLeaderGetsCommandFromClientItAddsLogToNextHeartBeat()
+	public async Task WhenLeaderGetsCommandFromClientItAddsLogToNextHeartBeat()
 	{
 		testServer.State = ServerState.Leader;
 		testServer.Term = 1;
-		testServer.ClientRequest("my request");
+		await testServer.ClientRequest("my request");
 		Thread.Sleep(65);
-		testServer.Stop();
+		await testServer.Stop();
 		LogEntry entry = new LogEntry(1, Operation.Default, "my request");
 		Assert.Single(testServer.Sentmessages);
 
 		Assert.Equal("HB", testServer.Sentmessages[0]);
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs.Count == 1));
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.term == 1)); 
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs[0] == entry)); 
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs.Count == 1));
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.term == 1)); 
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.newLogs[0] == entry)); 
 	}
 	// 2. when a leader receives a command from the client, it is appended to its log
 	[Fact]
@@ -81,36 +81,36 @@ public class LoggingTests
 
 	}
 	[Fact]
-	public void WhenElectedLeaderInitializesNextIndexList()
+	public async Task WhenElectedLeaderInitializesNextIndexList()
 	{
 		testServer.nextIndexes.Clear();
 		Thread.Sleep(350);// will have gone into canidate state
-		testServer.ReciveVote(1, true);
-		testServer.ReciveVote(2, true);
+		await testServer.ReciveVote(1, true);
+		await testServer.ReciveVote(2, true);
 		Assert.Equal(ServerState.Leader, testServer.State);
 		Assert.Equal(0, testServer.nextIndexes[0]);
 		Assert.Equal(0, testServer.nextIndexes[1]);
 	}
 	[Fact]
-	public void WhenElectedLeaderAsksForCommitedIndexOfAllServers()//to set the nextIndex Value
+	public async Task WhenElectedLeaderAsksForCommitedIndexOfAllServers()//to set the nextIndex Value
 	{
 		testServer.nextIndexes.Clear();
 		Thread.Sleep(350);// will have gone into canidate state
-		testServer.ReciveVote(1, true);
-		testServer.ReciveVote(2, true);
+		await testServer.ReciveVote(1, true);
+		await testServer.ReciveVote(2, true);
 		Assert.Equal(ServerState.Leader, testServer.State);
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.entry == "REQUEST COMMIT INDEX"));
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.entry == "REQUEST COMMIT INDEX"));
 	}
 	[Fact]
-	public void RespondsToCommitIndexRequest()
+	public async Task RespondsToCommitIndexRequest()
 	{
 		testServer.Log.Add(new LogEntry(1,Operation.None, "first"));
 		testServer.commitIndex = 1;
-		testServer.AppendEntries(new AppendEntry(1, "REQUEST COMMIT INDEX", 2, Operation.None, 3, new List<LogEntry>(), 0));
+		await testServer.AppendEntries(new AppendEntry(1, "REQUEST COMMIT INDEX", 2, Operation.None, 3, new List<LogEntry>(), 0));
 		//fake1.Received(1).AppendEntries(new AppendEntry(3, "COMMIT INDEX RESPONCE", 2, Operation.None, 1, new List<LogEntry>(), 1));
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.commitedIndex == 1));
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.nextIndex == 1));
-		fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.entry == "COMMIT INDEX RESPONCE"));
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.commitedIndex == 1));
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.nextIndex == 1));
+		await fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.entry == "COMMIT INDEX RESPONCE"));
 	}
 }
 
