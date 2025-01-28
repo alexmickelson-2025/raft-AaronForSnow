@@ -21,12 +21,12 @@ public class WebDelayTests
     public void PausedLeaderWillNotSendHeartBeets()
     {
         Thread.Sleep(330);
-        testServer.ReciveVote(1, true);
+        testServer.ReciveVoteAsync(1, true);
         Assert.Equal(ServerState.Leader, testServer.State);
-        testServer.Stop();
+        testServer.StopAsync();
         fake1.ClearReceivedCalls();
         Thread.Sleep(400);
-        fake1.Received(0).AppendEntries(Arg.Any<AppendEntry>());
+        fake1.Received(0).AppendEntriesAsync(Arg.Any<AppendEntry>());
     }
     // When node is a leader with an election loop, the get paused,
     // other nodes do not get hearbeats fot 400 ms, then the get un-paused and dearbeats resume
@@ -34,21 +34,21 @@ public class WebDelayTests
     public void ResumedLeaderWillSendHeartBeets()
     {
         Thread.Sleep(330);
-        testServer.ReciveVote(1, true);
+        testServer.ReciveVoteAsync(1, true);
         Assert.Equal(ServerState.Leader, testServer.State);
-        testServer.Stop();
+        testServer.StopAsync();
         fake1.ClearReceivedCalls();
         Thread.Sleep(400);
-        fake1.Received(0).AppendEntries(Arg.Any<AppendEntry>());
-        testServer.StartSim();
+        fake1.Received(0).AppendEntriesAsync(Arg.Any<AppendEntry>());
+        testServer.StartSimAsync();
         Thread.Sleep(65);
-        fake1.Received(1).AppendEntries(Arg.Is<AppendEntry>(e => e.entry == "HB"));
+        fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "HB"));
     }
     // When a folloewer gets paused, it does not time out to become a cadidate
     [Fact]
     public void PausedFollowerDoesNotStartElectionTimeout()
     {
-        testServer.Stop();
+        testServer.StopAsync();
         Thread.Sleep(400);
         Assert.Equal(ServerState.Follower, testServer.State);
     }
@@ -56,10 +56,10 @@ public class WebDelayTests
     [Fact]
     public void PausedFollowerDoesWIllStartElectionTimeoutOnceResumed()
     {
-        testServer.Stop();
+        testServer.StopAsync();
         Thread.Sleep(400);
         Assert.Equal(ServerState.Follower, testServer.State);
-        testServer.StartSim();
+        testServer.StartSimAsync();
         Thread.Sleep(350);
         Assert.Equal(ServerState.Candidate, testServer.State);
 

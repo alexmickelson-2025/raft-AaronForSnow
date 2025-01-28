@@ -18,11 +18,11 @@ public class LogTests
 //And the log entry contains the the term number at which the leader received it
 //And the log entry contains an integer index identifying its position in the log
 	[Fact]
-	public void LogEntryContainsComponents()
+	public async Task LogEntryContainsComponents()
 	{
 		IServerAaron testServer = new ServerAaron(1);
-		testServer.StartSim();
-		testServer.AppendEntries(
+		await testServer.StartSimAsync();
+		await testServer.AppendEntriesAsync(
 			new AppendEntry(1, "test log", 2, Operation.Default, 0, new List<LogEntry>()));
 		Assert.Single(testServer.Log);
 		Assert.Equal(Operation.Default, testServer.Log[0].Command);

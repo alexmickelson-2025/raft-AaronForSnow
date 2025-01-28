@@ -19,14 +19,14 @@
         public List<TermVote> TermVotes { get; set; }
         public List<IServerAaron> OtherServers { get; set; }
         public List<LogEntry> Log { get; set; }
-        Task AppendEntries(AppendEntry Entry);
-        Task Stop();
-        Task RequestVote(int requesterId, int term);
-        Task Confirm(int term, int reciverId);
-        Task HBRecived(int reciverId);
-        Task ReciveVote(int senderID, bool v);
-        Task StartSim();
-        Task ClientRequest(string value);
+        Task AppendEntriesAsync(AppendEntry Entry);
+        Task StopAsync();
+        Task RequestVoteAsync(int requesterId, int term);
+        Task ConfirmAsync(int term, int reciverId);
+        Task HBRecivedAsync(int reciverId);
+        Task ReciveVoteAsync(int senderID, bool v);
+        Task StartSimAsync();
+        Task ClientRequestAsync(string value);
 
 
 	}

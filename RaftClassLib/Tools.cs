@@ -23,6 +23,6 @@ public static class Tools
         fake1.OtherServers = [fake2, testServer];
         fake2.OtherServers = [fake1, testServer];
         testServer.OtherServers = [fake2, fake1];
-        testServer.StartSim();
+        testServer.StartSimAsync();
     }
 }

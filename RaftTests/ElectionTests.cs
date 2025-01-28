@@ -27,23 +27,23 @@ public class ElectionTests
     }
     //  1. When a leader is active it sends a heart beat within 50ms.
     [Fact]
-    public void LeaderSendsHeartBeats()
+    public async Task LeaderSendsHeartBeats()
     {
         IServerAaron testServer = new ServerAaron(1);
-        testServer.StartSim();
+        await testServer.StartSimAsync();
         testServer.State = ServerState.Leader;
         Thread.Sleep(65);
         Assert.True(testServer.Sentmessages.Count() >= 1);
     }
     //  2. When a node receives an AppendEntries from another node, then first node remembers that other node is the current leader.
     [Fact]
-    public void AppendEntriesWillSetLeader()
+    public async Task AppendEntriesWillSetLeader()
     {
         IServerAaron fake1;
         IServerAaron testServer;
         Tools.SetUpThreeServers(out fake1, out testServer);
         defaultEntry = new AppendEntry(2, "HB", 3, Operation.None, 0, new List<LogEntry>());
-		testServer.AppendEntries(defaultEntry);
+		await testServer.AppendEntriesAsync(defaultEntry);
         Assert.Equal(2, testServer.LeaderId);
     }
     //  3. When a new node is initialized, it should be in follower state.
@@ -58,7 +58,7 @@ public class ElectionTests
     public async Task FollowerWillStartElection()
     {
         var testServer = new ServerAaron(1);
-        await testServer.StartSim();
+        await testServer.StartSimAsync();
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Contains("Election Request", testServer.Sentmessages);
     }
@@ -66,12 +66,12 @@ public class ElectionTests
 //    * between
 //    * random: call n times and make sure that there are some that are different (other properties of the distribution if you like)
   [Fact]
-    public void ElectionTimeoutIsRandom()
+    public async Task ElectionTimeoutIsRandom()
     {
         List<double> t = new List<double>();
         for (int i = 0; i < 4; i++) {
             IServerAaron testServer = new ServerAaron(1);
-            testServer.StartSim();
+            await testServer.StartSimAsync();
             Assert.True(testServer.ElectionTimer.Interval >= 150);
             Assert.True(testServer.ElectionTimer.Interval <= 300);
             t.Add(testServer.ElectionTimer.Interval);
@@ -84,27 +84,27 @@ public class ElectionTests
     //    * reread term(?)
     //    * assert after is greater(by at least 1)
     [Fact]
-    public void ElectionWillBeginsWithHigherTerm()
+    public async Task ElectionWillBeginsWithHigherTerm()
     {
         IServerAaron testServer = new ServerAaron(1);
-        testServer.StartSim();
+        await testServer.StartSimAsync();
         testServer.Term = 1;
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.True(testServer.Term > 1);
     }
     //  7. When a follower does get an AppendEntries message, it resets the election timer. (i.e.it doesn't start an election even after more than 300ms)
     [Fact]
-    public void AppendEntriesResetsElectionTimer()
+    public async Task AppendEntriesResetsElectionTimer()
     {
         IServerAaron fake1;
         IServerAaron testServer;
         Tools.SetUpThreeServers(out fake1, out testServer);
         Thread.Sleep(100);
-        testServer.AppendEntries(defaultEntry);
+        await testServer.AppendEntriesAsync(defaultEntry);
         Thread.Sleep(100);
-        testServer.AppendEntries(defaultEntry);
+        await testServer.AppendEntriesAsync(defaultEntry);
         Thread.Sleep(100);
-        testServer.AppendEntries(defaultEntry);
+        await testServer.AppendEntriesAsync(defaultEntry);
         Assert.Equal(ServerState.Follower, testServer.State);
     }
     //  8. Given an election begins, when the candidate gets a majority of votes, it becomes a leader. (think of the easy case; can use two tests for single and multi-node clusters)
@@ -112,20 +112,20 @@ public class ElectionTests
     public async Task WhenCadidateGetMajorityVotesBecomesLeaderSingleNode()
     {
         var testServer = new ServerAaron(1); //default to 1 server
-        await testServer.StartSim();
+        await testServer.StartSimAsync();
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Leader, testServer.State);
     }
 
     //  9. Given a candidate receives a majority of votes while waiting for unresponsive node, it still becomes a leader.
     [Fact]
-    public void WhenCadidateGetMajorityVotesBecomesLeaderThreeNodes()
+    public async Task WhenCadidateGetMajorityVotesBecomesLeaderThreeNodes()
     {
         IServerAaron fake1;
         IServerAaron testServer;
         Tools.SetUpThreeServers(out fake1, out testServer);
         Tools.SleepElectionTimeoutBuffer(testServer);
-        testServer.ReciveVote(senderID: 3, true);
+        await testServer.ReciveVoteAsync(senderID: 3, true);
         Assert.Equal(ServerState.Leader, testServer.State);
     }
     // -9. A follower that has not voted and is in a later term than the candidate responds to a RequestForVoteRPC with no. (inverse of 9)
@@ -140,26 +140,26 @@ public class ElectionTests
     }
     // 10. A follower that has not voted and is in an earlier term responds to a RequestForVoteRPC with yes. (the reply will be a separate RPC)
     [Fact]
-    public void WhenFolloewerAskedForVoteGetPositiveResponce()
+    public async Task WhenFolloewerAskedForVoteGetPositiveResponce()
     {
 		IServerAaron fake1;//1
 		IServerAaron testServer;//3
 		Tools.SetUpThreeServers(out fake1, out testServer);
-		testServer.RequestVote(fake1.ID,2); // id, term
+		await testServer.RequestVoteAsync(fake1.ID, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(fake1.ID, testServer.TermVotes.Last().RequesterId);
-        fake1.Received(1).ReciveVote(senderID: testServer.ID, true);
+        await fake1.Received(1).ReciveVoteAsync(senderID: testServer.ID, true);
         Assert.Contains("Positive Vote", testServer.Sentmessages);
     }
     // 10.5 When I am a candidate I request votes from other servers
     [Fact]
-    public void CadidateVotesRequestVotes()
+    public async Task CadidateVotesRequestVotes()
     {
         IServerAaron fake1;
         IServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
 		Thread.Sleep(350);
-        fake1.Received(1).RequestVote(testServer.ID,2);
+        await fake1.Received(1).RequestVoteAsync(testServer.ID, 2);
     }
 		// 11. Given a candidate server that just became a candidate, it votes for itself.
 	[Fact]
@@ -174,7 +174,7 @@ public class ElectionTests
     }
     // 12. Given a candidate, when it receives an AppendEntries message from a node with a later term, then candidate loses and becomes a follower.
     [Fact]
-    public void AppendEntriesWillSetLeaderFromCadidateStateHigerTerms()
+    public async Task AppendEntriesWillSetLeaderFromCadidateStateHigerTerms()
     {
         IServerAaron fake1;
         IServerAaron testServer;
@@ -182,14 +182,14 @@ public class ElectionTests
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
 		defaultEntry = new AppendEntry(2, "HB", 30, Operation.None, 0, new List<LogEntry>());
-		testServer.AppendEntries(defaultEntry);
-        testServer.Stop();
+		await testServer.AppendEntriesAsync(defaultEntry);
+        await testServer.StopAsync();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.LeaderId);
     }
     // 13. Given a candidate, when it receives an AppendEntries message from a node with an equal term, then candidate loses and becomes a follower.
     [Fact]
-    public void AppendEntriesWillSetLeaderFromCadidateStateEqualTerms()
+    public async Task AppendEntriesWillSetLeaderFromCadidateStateEqualTerms()
     {
         IServerAaron fake1;
         IServerAaron testServer;
@@ -198,20 +198,20 @@ public class ElectionTests
         Assert.Equal(ServerState.Candidate, testServer.State);
         testServer.Term = 2; //should already be, but just in case
 		defaultEntry = new AppendEntry(2, "HB", 2, Operation.None, 0, new List<LogEntry>());
-		testServer.AppendEntries(defaultEntry);
-        testServer.Stop();
+		await testServer.AppendEntriesAsync(defaultEntry);
+        await testServer.StopAsync();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.LeaderId);
     }
     // 14. If a node receives a second request for vote for the same term, it should respond no. (again, separate RPC for response)
     [Fact]
-    public void WhenFolloewerAskedForVoteSameTermForAnotherSendNegativeResponce()
+    public async Task WhenFolloewerAskedForVoteSameTermForAnotherSendNegativeResponce()
     {
 		IServerAaron fake1;
 		IServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
-		testServer.RequestVote(2, 2); // id, term
-        testServer.RequestVote(1, 2); // id, term
+		await testServer.RequestVoteAsync(2, 2); // id, term
+        await testServer.RequestVoteAsync(1, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
         Assert.Contains("Positive Vote", testServer.Sentmessages);
@@ -219,13 +219,13 @@ public class ElectionTests
     }
     // 15. If a node receives a second request for vote for a future term, it should vote for that node.
     [Fact]
-    public void WhenFolloewerAskedForVoteSameTermAgainVoteAgain()
+    public async Task WhenFolloewerAskedForVoteSameTermAgainVoteAgain()
     {
 		IServerAaron fake1;
 		IServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
-		testServer.RequestVote(2, 2); // id, term
-        testServer.RequestVote(2, 2); // id, term
+		await testServer.RequestVoteAsync(2, 2); // id, term
+        await testServer.RequestVoteAsync(2, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
         Assert.Contains("Positive Vote", testServer.Sentmessages);
@@ -253,40 +253,40 @@ public class ElectionTests
     }
     // 17. When a follower node receives an AppendEntries request, it sends a response.
     [Fact]
-    public void AppentEntriesRepliesWithSuccess()
+    public async Task AppentEntriesRepliesWithSuccess()
     {
         IServerAaron fake1;
         IServerAaron testServer;
         Tools.SetUpThreeServers(out fake1, out testServer);
         testServer.State = ServerState.Follower;
-		testServer.AppendEntries(defaultEntry);
-        testServer.Stop();
+		await testServer.AppendEntriesAsync(defaultEntry);
+        await testServer.StopAsync();
         fake1.Received(1);
     }
     // 18. Given a candidate receives an AppendEntries from a previous term, then rejects.
     [Fact]
-    public void AppendEntriesWithLowerTermIsRejected()
+    public async Task AppendEntriesWithLowerTermIsRejected()
     {
 		IServerAaron fake1;
 		IServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
 		testServer.LeaderId = 1;
         testServer.Term = 4;
-		testServer.AppendEntries(defaultEntry);
-        testServer.Stop();
+		await testServer.AppendEntriesAsync(defaultEntry);
+        await testServer.StopAsync();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(1, testServer.LeaderId);
         Assert.Contains("Leader is 1", testServer.Sentmessages); // act of rejecting
     }
     // 19. When a candidate wins an election, it immediately sends a heart beat.
     [Fact]
-    public void WhenCadidateBecomdesLeaderImmediateSendHeartBeet()
+    public async Task WhenCadidateBecomdesLeaderImmediateSendHeartBeet()
     {
 		IServerAaron fake1;
 		IServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
 		Tools.SleepElectionTimeoutBuffer(testServer);
-        testServer.ReciveVote(senderID: 3, true);
+        await testServer.ReciveVoteAsync(senderID: 3, true);
         Assert.Equal(ServerState.Leader, testServer.State);
         Assert.Contains("HB",testServer.Sentmessages);
     }

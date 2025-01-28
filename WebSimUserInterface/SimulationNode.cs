@@ -26,43 +26,43 @@ public class SimulationNode : IServerAaron
 	public int commitIndex { get => ((IServerAaron)InnerNode).commitIndex; set => ((IServerAaron)InnerNode).commitIndex = value; }
 	public List<int> nextIndexes { get => ((IServerAaron)InnerNode).nextIndexes; set => ((IServerAaron)InnerNode).nextIndexes = value; }
 
-	public Task AppendEntries(AppendEntry Entry)
+	public Task AppendEntriesAsync(AppendEntry Entry)
 	{
-		return ((IServerAaron)InnerNode).AppendEntries(Entry);
+		return ((IServerAaron)InnerNode).AppendEntriesAsync(Entry);
 	}
 
-    public Task ClientRequest(string value)
+    public Task ClientRequestAsync(string value)
     {
-        return ((IServerAaron)InnerNode).ClientRequest(value);
+        return ((IServerAaron)InnerNode).ClientRequestAsync(value);
     }
 
-    public Task Confirm(int term, int reciverId)
+    public Task ConfirmAsync(int term, int reciverId)
 	{
-		return ((IServerAaron)InnerNode).Confirm(term, reciverId);
+		return ((IServerAaron)InnerNode).ConfirmAsync(term, reciverId);
 	}
 
-	public Task HBRecived(int reciverId)
+	public Task HBRecivedAsync(int reciverId)
 	{
-		return ((IServerAaron)InnerNode).HBRecived(reciverId);
+		return ((IServerAaron)InnerNode).HBRecivedAsync(reciverId);
 	}
 
-	public Task Stop()
+	public Task StopAsync()
 	{
-		return ((IServerAaron)InnerNode).Stop();
+		return ((IServerAaron)InnerNode).StopAsync();
 	}
 
-	public Task ReciveVote(int senderID, bool v)
+	public Task ReciveVoteAsync(int senderID, bool v)
 	{
-		return ((IServerAaron)InnerNode).ReciveVote(senderID, v);
+		return ((IServerAaron)InnerNode).ReciveVoteAsync(senderID, v);
 	}
 
-	public Task RequestVote(int requesterId, int term)
+	public Task RequestVoteAsync(int requesterId, int term)
 	{
-		return ((IServerAaron)InnerNode).RequestVote(requesterId, term);
+		return ((IServerAaron)InnerNode).RequestVoteAsync(requesterId, term);
 	}
 
-	public Task StartSim()
+	public Task StartSimAsync()
 	{
-		return ((IServerAaron)InnerNode).StartSim();
+		return ((IServerAaron)InnerNode).StartSimAsync();
 	}
 }

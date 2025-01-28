@@ -40,7 +40,7 @@ public class ServerAaron : IServerAaron
         Log = new List<LogEntry>();
 	}
 
-	public async Task StartSim()
+	public async Task StartSimAsync()
 	{
 		startTimers();
 		IsLive = true;
@@ -51,7 +51,7 @@ public class ServerAaron : IServerAaron
     {
 		int interval = Random.Shared.Next(150 * ElectionTimeoutMultiplier, 300 * ElectionTimeoutMultiplier);
 		ElectionTimer = new Timer(interval);
-		ElectionTimer.Elapsed += StartElection;
+		ElectionTimer.Elapsed += async (sender, e) => await StartElection(sender,e);
 		ElectionTimer.AutoReset = true;
 		ElectionTimer.Start();
 		HBTimer = new Timer(50);
@@ -89,12 +89,12 @@ public class ServerAaron : IServerAaron
 					newEntries.Add(Log[i]);
 				}
 				AppendEntry ent = new AppendEntry(ID, "HB", Term, Operation.Default, commitIndex, newEntries, Log.Count);
-                server.AppendEntries(ent);
+                await server.AppendEntriesAsync(ent);
             }
         }
     }
 
-    private void StartElection(object? sender, ElapsedEventArgs? e)
+    private async Task StartElection(object? sender, ElapsedEventArgs? e)
     {
         if (State == ServerState.Leader)
             return;
@@ -103,15 +103,15 @@ public class ServerAaron : IServerAaron
         ++Term;
         SelfLog("Election Request", Operation.None, -1);
         Votes = new List<Vote>() { new Vote(ID, true) };
-        tallyVotes();
+        await tallyVotesAsync();
         foreach (IServerAaron node in OtherServers)
         {
-            node.RequestVote(ID, Term);
+            await node.RequestVoteAsync(ID, Term);
         }
 
     }
 
-    private void tallyVotes()
+    private async Task tallyVotesAsync()
     {
         if (positiveVotes() > NumServers / 2)
         {
@@ -120,9 +120,9 @@ public class ServerAaron : IServerAaron
             foreach( IServerAaron node in OtherServers)
             {
                 nextIndexes.Add(0);
-                node.AppendEntries(new AppendEntry(ID, "REQUEST COMMIT INDEX", Term, Operation.None, commitIndex, new List<LogEntry>(), 0));
+                await node.AppendEntriesAsync(new AppendEntry(ID, "REQUEST COMMIT INDEX", Term, Operation.None, commitIndex, new List<LogEntry>(), 0));
             }
-            sendHeartBeet(null, null);
+            await sendHeartBeet(null, null);
         }
     }
 
@@ -143,7 +143,7 @@ public class ServerAaron : IServerAaron
         if (com is not Operation.None && term != -1)
             Log.Add(new LogEntry(term, com, message));
     }
-    public async Task Stop()
+    public async Task StopAsync()
     {
         IsLive = false;
         HBTimer.Stop();
@@ -151,7 +151,7 @@ public class ServerAaron : IServerAaron
         await Task.CompletedTask;
     }
 
-    public async Task AppendEntries(AppendEntry Entry)
+    public async Task AppendEntriesAsync(AppendEntry Entry)
     {
         if (!IsLive) { return; }
         await PosibleDelay();
@@ -163,7 +163,7 @@ public class ServerAaron : IServerAaron
 		if (Entry.entry == "REQUEST COMMIT INDEX" && State == ServerState.Follower)
         {
             var message = new AppendEntry(ID, "COMMIT INDEX RESPONCE", Term, Operation.None, commitIndex, new List<LogEntry>() , Log.Count);
-            await sender.AppendEntries(message);
+            await sender.AppendEntriesAsync(message);
         }
         else if (Entry.entry == "COMMIT INDEX RESPONCE" && State == ServerState.Leader)
 		{
@@ -199,7 +199,7 @@ public class ServerAaron : IServerAaron
 		SelfLog("AppendReceived", Entry.command, Entry.term);
 		resetElectionTimer();
 		if (sender.ID != -1)
-		{ await sender.Confirm(Entry.term, ID); }
+		{ await sender.ConfirmAsync(Entry.term, ID); }
 	}
 
 	private async Task respondToHeartBeet(AppendEntry Entry, IServerAaron sender)
@@ -207,7 +207,7 @@ public class ServerAaron : IServerAaron
 		LeaderId = Entry.senderID;
 		resetElectionTimer();
 		if (sender.ID != -1)
-			await sender.HBRecived(ID);
+			await sender.HBRecivedAsync(ID);
 		State = ServerState.Follower;
 	}
 
@@ -219,18 +219,18 @@ public class ServerAaron : IServerAaron
         }
     }
 
-    public async Task ReciveVote(int senderID, bool positveVote)
+    public async Task ReciveVoteAsync(int senderID, bool positveVote)
     {
         if (!IsLive) { return; }
         Votes.Add(new Vote(senderID, positveVote));
         if (State != ServerState.Leader)
         {
-            tallyVotes();
+            await tallyVotesAsync();
         }
         await Task.CompletedTask;
     }
 
-    public async Task RequestVote(int requesterId, int term)
+    public async Task RequestVoteAsync(int requesterId, int term)
     {
         if (!IsLive) { return; }
         int termVotedId = TermVotes.FirstOrDefault(t => t.Term == term)?.RequesterId ?? 0;
@@ -243,33 +243,33 @@ public class ServerAaron : IServerAaron
         {
             SelfLog("Rejected Vote", Operation.None, -1);
             if (sender.ID != -1)
-                await sender.ReciveVote(ID, false);
+                await sender.ReciveVoteAsync(ID, false);
         }
         else // no votes for that term yet
         {
             TermVotes.Add(new TermVote(requesterId, term));
 			if (sender.ID != -1)
-				await sender.ReciveVote(ID, true);
+				await sender.ReciveVoteAsync(ID, true);
             SelfLog("Positive Vote", Operation.None, -1);
 			ElectionTimer.Stop();
 			resetElectionTimer();
 		}
     }
 
-    public async Task Confirm(int term, int reciverId)
+    public async Task ConfirmAsync(int term, int reciverId)
     {
         await PosibleDelay();
         await Task.CompletedTask;
             //throw new NotImplementedException();
     }
 
-    public async Task HBRecived(int reciverId)
+    public async Task HBRecivedAsync(int reciverId)
     {
         await PosibleDelay();
         await Task.CompletedTask;
     }
 
-	public async Task ClientRequest(string value)
+	public async Task ClientRequestAsync(string value)
 	{
         if (!IsLive) { return; }
         if (State == ServerState.Leader)
