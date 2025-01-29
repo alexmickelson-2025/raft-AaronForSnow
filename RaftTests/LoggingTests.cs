@@ -164,6 +164,23 @@ public class LoggingTests
 	}
 	// 10. when a follower receives a valid heartbeat, it increases its commitIndex to match the commit index of the heartbeat
 	//		1. reject the heartbeat if the previous log index / term number does not match your log
+	[Fact]
+	public async Task FollowerIncreasesCommitIndexToMatchLeaderAppendEntry()
+	{
+		testServer.Log = [
+			new LogEntry(1,Operation.None, "first"), //0
+			new LogEntry(1,Operation.None, "second"), //1
+			new LogEntry(2,Operation.None, "third"),//2
+			new LogEntry(2,Operation.None, "fourth"),//3
+			new LogEntry(2,Operation.None, "fith"),//4
+		];
+		testServer.commitIndex = 1;
+		testServer.Term = 3;
+		List<LogEntry> logEntries = new List<LogEntry>();
+		await testServer.AppendEntriesAsync(new AppendEntry(1, "HB", 3, Operation.None, 3,logEntries, 5));
+		Assert.Equal(3, testServer.commitIndex);
+		Assert.Equal("thirdfourth", testServer.StateMachineDataBucket);
+	}
 	// 11. When sending an AppendEntries RPC, the leader includes the index and term of the entry in its log that immediately precedes the new entries
 	//		1. If the follower does not find an entry in its log with the same index and term, then it refuses the new entries
 	//          1. term must be same or newer

@@ -160,8 +160,12 @@ public class ServerAaron : IServerAaron
         if (!IsLive) { return; }
         await PosibleDelay();
         IServerAaron sender = OtherServers.FirstOrDefault(s => s.ID == Entry.senderID) ?? new ServerAaron(-1);
-        if (Entry.entry == "HB" && Entry.term >= Term)
+        if (Entry.entry == "HB" && Entry.term >= Term && Entry.commitedIndex >= commitIndex)
 		{
+			if (Entry.term == Term || Entry.term == Term +1 && Entry.nextIndex == Log.Count) // it should be a valid heart beat
+            {
+                await CheckCommitedIndexAsync(Entry.commitedIndex);
+            }
 			await respondToHeartBeet(Entry, sender);
 		}
 		if (Entry.entry == "REQUEST COMMIT INDEX" && State == ServerState.Follower)
@@ -284,15 +288,29 @@ public class ServerAaron : IServerAaron
 		return confirmesRecived.Where(c => c.indexOfLog == indexOfLog).Count();
 	}
 
-	private async Task CheckCommitedIndexAsync()
+	private async Task CheckCommitedIndexAsync(int expectedCommitIndex = -1)
     {
-        int count = getNumConfirmedForIndex(commitIndex + 1);
-        if (count >= OtherServers.Count / 2)
+        switch (State)
         {
-            ++commitIndex;
-            StateMachineDataBucket += Log[commitIndex].uniqueValue;
-            await CheckCommitedIndexAsync();
-        }
+            case ServerState.Leader:
+				int count = getNumConfirmedForIndex(commitIndex + 1);
+				if (count >= OtherServers.Count / 2 && Log.Count > commitIndex + 1)
+				{
+					++commitIndex;
+					StateMachineDataBucket += Log[commitIndex].uniqueValue;
+					await CheckCommitedIndexAsync();
+                    
+				}
+                break;
+            case ServerState.Follower:
+                if (commitIndex < expectedCommitIndex && Log.Count > commitIndex + 1)
+                {
+					++commitIndex;
+                    StateMachineDataBucket += Log[commitIndex].uniqueValue;
+                    await CheckCommitedIndexAsync(expectedCommitIndex);
+				}
+                break;
+		}
     }
 
 
