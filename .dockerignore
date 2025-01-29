@@ -1,0 +1,10 @@
+.vs
+.vscode
+bin/
+obj/
+Dockerfile
+dev.Dockerfile
+docker-compose.yml
+.gitignore
+Readme.md
+
