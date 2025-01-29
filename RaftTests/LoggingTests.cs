@@ -181,12 +181,47 @@ public class LoggingTests
 		Assert.Equal(3, testServer.commitIndex);
 		Assert.Equal("thirdfourth", testServer.StateMachineDataBucket);
 	}
+	[Fact]
+	public async Task FollowerDoesNotIncreasesCommitIndexToMatchLeaderAppendEntryWhenTermTooHigh()
+	{
+		testServer.Log = [
+			new LogEntry(1,Operation.None, "first"), //0
+			new LogEntry(1,Operation.None, "second"), //1
+			new LogEntry(2,Operation.None, "third"),//2
+			new LogEntry(2,Operation.None, "fourth"),//3
+			new LogEntry(2,Operation.None, "fith"),//4
+		];
+		testServer.commitIndex = 1;
+		testServer.Term = 2;
+		List<LogEntry> logEntries = new List<LogEntry>();
+		await testServer.AppendEntriesAsync(new AppendEntry(1, "HB", 4, Operation.None, 3, logEntries, 5));
+		Assert.Equal(1, testServer.commitIndex);
+		Assert.Equal("", testServer.StateMachineDataBucket);
+	}
+	//[Fact]
+	//public async Task FollowerDoesNotIncreasesCommitIndexToMatchLeaderAppendEntryWhenNextIndexTooHigh()
+	//{
+	//	testServer.Log = [
+	//		new LogEntry(1,Operation.None, "first"), //0
+	//		new LogEntry(1,Operation.None, "second"), //1
+	//		new LogEntry(2,Operation.None, "third"),//2
+	//		new LogEntry(2,Operation.None, "fourth"),//3
+	//		new LogEntry(2,Operation.None, "fith"),//4
+	//	];
+	//	testServer.commitIndex = 1;
+	//	testServer.Term = 3;
+	//	List<LogEntry> logEntries = new List<LogEntry>();
+	//	await testServer.AppendEntriesAsync(new AppendEntry(1, "HB", 3, Operation.None, 3, logEntries, 7));
+	//	Assert.Equal(1, testServer.commitIndex);
+	//	Assert.Equal("", testServer.StateMachineDataBucket);
+	//}
 	// 11. When sending an AppendEntries RPC, the leader includes the index and term of the entry in its log that immediately precedes the new entries
 	//		1. If the follower does not find an entry in its log with the same index and term, then it refuses the new entries
 	//          1. term must be same or newer
 	//			2. if index is greater, it will be decreased by leader
 	//			3. if index is less, we delete what we have
 	//		2. if a follower rejects the AppendEntries RPC, the leader decrements nextIndex and retries the AppendEntries RPC
+
 	// 12. when a leader sends a heartbeat with a log, but does not receive responses from a majority of nodes, the entry is uncommitted
 	// 13. if a leader does not response from a follower, the leader continues to send the log entries in subsequent heartbeats 
 	// 14. if a leader cannot commit an entry, it does not send a response to the client
