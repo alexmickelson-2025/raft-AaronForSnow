@@ -26,6 +26,8 @@ public class SimulationNode : IServerAaron
 	public int commitIndex { get => ((IServerAaron)InnerNode).commitIndex; set => ((IServerAaron)InnerNode).commitIndex = value; }
 	public List<int> nextIndexes { get => ((IServerAaron)InnerNode).nextIndexes; set => ((IServerAaron)InnerNode).nextIndexes = value; }
 
+	public string StateMachineDataBucket => ((IServerAaron)InnerNode).StateMachineDataBucket;
+
 	public Task AppendEntriesAsync(AppendEntry Entry)
 	{
 		return ((IServerAaron)InnerNode).AppendEntriesAsync(Entry);
@@ -35,11 +37,6 @@ public class SimulationNode : IServerAaron
     {
         return ((IServerAaron)InnerNode).ClientRequestAsync(value);
     }
-
-    public Task ConfirmAsync(int term, int reciverId)
-	{
-		return ((IServerAaron)InnerNode).ConfirmAsync(term, reciverId);
-	}
 
 	public Task HBRecivedAsync(int reciverId)
 	{
@@ -64,5 +61,10 @@ public class SimulationNode : IServerAaron
 	public Task StartSimAsync()
 	{
 		return ((IServerAaron)InnerNode).StartSimAsync();
+	}
+
+	public Task ConfirmAsync(int term, int reciverId, int indexOfLog = 0)
+	{
+		return ((IServerAaron)InnerNode).ConfirmAsync(term, reciverId, indexOfLog);
 	}
 }

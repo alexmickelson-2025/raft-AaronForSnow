@@ -5,6 +5,7 @@
     public interface IServerAaron
     {
         public ServerState State {get; set;}
+        public string StateMachineDataBucket {get;}
         public List<string> Sentmessages { get; set;}   
         public Timer ElectionTimer { get; set;}
         public bool IsLive { get; set;}
@@ -22,7 +23,7 @@
         Task AppendEntriesAsync(AppendEntry Entry);
         Task StopAsync();
         Task RequestVoteAsync(int requesterId, int term);
-        Task ConfirmAsync(int term, int reciverId);
+        Task ConfirmAsync(int term, int reciverId, int indexOfLog = 0);
         Task HBRecivedAsync(int reciverId);
         Task ReciveVoteAsync(int senderID, bool v);
         Task StartSimAsync();

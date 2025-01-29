@@ -23,9 +23,11 @@ public class ServerAaron : IServerAaron
     public List<LogEntry> Log { get; set; }
     public int commitIndex { get; set; } = -1;
     public List<int> nextIndexes { get; set; } = new List<int>();
+    private List<Confirmaiton> confirmesRecived { get; set; }
+	public string StateMachineDataBucket { get; private set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
-    public ServerAaron(int id)
+	public ServerAaron(int id)
 #pragma warning restore CS8618
 	{
 		this.ID = id;
@@ -38,6 +40,8 @@ public class ServerAaron : IServerAaron
 		Sentmessages = new List<string>();
 		OtherServers = new List<IServerAaron>();
         Log = new List<LogEntry>();
+        confirmesRecived = new List<Confirmaiton>();
+        StateMachineDataBucket = "";
 	}
 
 	public async Task StartSimAsync()
@@ -256,14 +260,43 @@ public class ServerAaron : IServerAaron
 		}
     }
 
-    public async Task ConfirmAsync(int term, int reciverId)
+    public async Task ConfirmAsync(int term, int reciverId, int indexOfLog = 0)
     {
         await PosibleDelay();
-        await Task.CompletedTask;
-            //throw new NotImplementedException();
+        Confirmaiton con = new Confirmaiton(term, reciverId, indexOfLog);
+        if (State == ServerState.Leader && indexOfLog < Log.Count && indexOfLog > commitIndex)
+		{
+			if (!confirmesRecived.Contains(con))
+			{
+				confirmesRecived.Add(con);
+			}
+			int count = getNumConfirmedForIndex(indexOfLog);
+			if (count >= OtherServers.Count / 2)
+			{
+				await OtherServers.Where(s => s.ID == reciverId).First().ConfirmAsync(term, ID, indexOfLog);
+				await CheckCommitedIndexAsync();
+			}
+		}
+	}
+
+	private int getNumConfirmedForIndex(int indexOfLog)
+	{
+		return confirmesRecived.Where(c => c.indexOfLog == indexOfLog).Count();
+	}
+
+	private async Task CheckCommitedIndexAsync()
+    {
+        int count = getNumConfirmedForIndex(commitIndex + 1);
+        if (count >= OtherServers.Count / 2)
+        {
+            ++commitIndex;
+            StateMachineDataBucket += Log[commitIndex].uniqueValue;
+            await CheckCommitedIndexAsync();
+        }
     }
 
-    public async Task HBRecivedAsync(int reciverId)
+
+	public async Task HBRecivedAsync(int reciverId)
     {
         await PosibleDelay();
         await Task.CompletedTask;
@@ -295,3 +328,4 @@ public class Vote
         PositiveVote = positiveVote;    
     }
 }
+public record Confirmaiton(int term, int reciverId, int indexOfLog = 0);
