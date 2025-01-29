@@ -112,6 +112,22 @@ public class LoggingTests
 		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.nextIndex == 1));
 		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "COMMIT INDEX RESPONCE"));
 	}
+	// 5. leaders maintain an "nextIndex" for each follower that is the index of the next log entry the leader will send to that follower
+	[Fact]
+	public void LeadersTrackNextIndexes()
+	{
+		Assert.Equal(testServer.nextIndexes.Count, testServer.OtherServers.Count);
+	}
+	// 6. Highest committed index from the leader is included in AppendEntries RPC's
+	[Fact]
+	public async Task CommittedIndexIncludedInLeaderAppendEntriesHeartBeat()
+	{
+		testServer.State = ServerState.Leader;
+		Thread.Sleep(60);
+		await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.commitedIndex == -1));//none, commited yet
+	}
+	// 7. entry index  //I assume this is the next index. the index of the next expected entry. It will be the entry you should expect if you add the list given in the append entry
+
 }
 
 
