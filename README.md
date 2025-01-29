@@ -32,16 +32,16 @@
 
    Logging Tests Progress:
 
-1. when a leader receives a client command the leader sends the log entry in the next appendentries RPC to all nodes
-2. 2. when a leader receives a command from the client, it is appended to its log
-3. when a node is new, its log is empty]
-4. when a leader wins an election, it initializes the nextIndex for each follower to the index just after the last one it its log
-5. leaders maintain an "nextIndex" for each follower that is the index of the next log entry the leader will send to that follower
-6. Highest committed index from the leader is included in AppendEntries RPC's
-7. entry index  //I assume this is the next index. the index of the next expected entry. It will be the entry you should expect if you add the list given in the append entry
-8. when a leader receives a majority responses from the clients after a log replication heartbeat, the leader sends a confirmation response to the client
-9. given a leader node, when a log is committed, it applies it to its internal state machine
-10. when a follower receives a valid heartbeat, it increases its commitIndex to match the commit index of the heartbeat
+1. # when a leader receives a client command the leader sends the log entry in the next appendentries RPC to all nodes
+2. #2. when a leader receives a command from the client, it is appended to its log
+3. #when a node is new, its log is empty]
+4. #when a leader wins an election, it initializes the nextIndex for each follower to the index just after the last one it its log
+5. #leaders maintain an "nextIndex" for each follower that is the index of the next log entry the leader will send to that follower
+6. #Highest committed index from the leader is included in AppendEntries RPC's
+7. #entry index  //I assume this is the next index. the index of the next expected entry. It will be the entry you should expect if you add the list given in the append entry
+8. #when a leader receives a majority responses from the clients after a log replication heartbeat, the leader sends a confirmation response to the client
+9. #given a leader node, when a log is committed, it applies it to its internal state machine
+10. #when a follower receives a valid heartbeat, it increases its commitIndex to match the commit index of the heartbeat
 		1. reject the heartbeat if the previous log index / term number does not match your log
 11. When sending an AppendEntries RPC, the leader includes the index and term of the entry in its log that immediately precedes the new entries
 		1. If the follower does not find an entry in its log with the same index and term, then it refuses the new entries
