@@ -1,65 +1,102 @@
+using RaftClassLib;
+
 public class HttpRpcOtherNode : INode
 {
-  public int Id { get; }
-  public string Url { get; }
-  private HttpClient client = new();
- 
-  public HttpRpcOtherNode(int id, string url)
-  {
-    Id = id;
-    Url = url;
-  }
- 
-  public async Task RequestAppendEntries(AppendEntriesData request)
-  {
-    try
+    public int Id { get; }
+    public string Url { get; }
+    private HttpClient client = new();
+
+    public HttpRpcOtherNode(int id, string url)
     {
-      await client.PostAsJsonAsync(Url + "/request/appendEntries", request);
+        Id = id;
+        Url = url;
     }
-    catch (HttpRequestException)
+
+    //public async Task RequestAppendEntries(AppendEntriesData request)
+    //{
+    //    try
+    //    {
+    //        await client.PostAsJsonAsync(Url + "/request/appendEntries", request);
+    //    }
+    //    catch (HttpRequestException)
+    //    {
+    //        Console.WriteLine($"node {Url} is down");
+    //    }
+    //}
+
+    //public async Task RequestVote(VoteRequestData request)
+    //{
+    //    try
+    //    {
+    //        await client.PostAsJsonAsync(Url + "/request/vote", request);
+    //    }
+    //    catch (HttpRequestException)
+    //    {
+    //        Console.WriteLine($"node {Url} is down");
+    //    }
+    //}
+
+    //public async Task RespondAppendEntries(RespondEntriesData response)
+    //{
+    //    try
+    //    {
+    //        await client.PostAsJsonAsync(Url + "/response/appendEntries", response);
+    //    }
+    //    catch (HttpRequestException)
+    //    {
+    //        Console.WriteLine($"node {Url} is down");
+    //    }
+    //}
+
+    //public async Task ResponseVote(VoteResponseData response)
+    //{
+    //    try
+    //    {
+    //        await client.PostAsJsonAsync(Url + "/response/vote", response);
+    //    }
+    //    catch (HttpRequestException)
+    //    {
+    //        Console.WriteLine($"node {Url} is down");
+    //    }
+    //}
+
+    //public async Task SendCommand(ClientCommandData data)
+    //{
+    //    await client.PostAsJsonAsync(Url + "/request/command", data);
+    //}
+
+    public async Task AppendEntriesAsync(AppendEntry Entry)
     {
-      Console.WriteLine($"node {Url} is down");
+        await client.PostAsJsonAsync(Url + "AppendEntries", Entry);
     }
-  }
- 
-  public async Task RequestVote(VoteRequestData request)
-  {
-    try
+
+    public async Task StartSimAsync()
     {
-      await client.PostAsJsonAsync(Url + "/request/vote", request);
+        await client.PostAsJsonAsync(Url + "StartSim", "");
     }
-    catch (HttpRequestException)
+
+    public Task StopAsync()
     {
-      Console.WriteLine($"node {Url} is down");
+        throw new NotImplementedException();
     }
-  }
- 
-  public async Task RespondAppendEntries(RespondEntriesData response)
-  {
-    try
+
+    public Task RequestVoteAsync(RequestVoteDTO request)
     {
-      await client.PostAsJsonAsync(Url + "/response/appendEntries", response);
+        throw new NotImplementedException();
     }
-    catch (HttpRequestException)
+
+    public Task ReciveVoteAsync(ReceiveVoteDTO ballet)
     {
-      Console.WriteLine($"node {Url} is down");
+        throw new NotImplementedException();
     }
-  }
- 
-  public async Task ResponseVote(VoteResponseData response)
-  {
-    try
+
+    public Task ConfirmAsync(ConfirmationDTO info)
     {
-      await client.PostAsJsonAsync(Url + "/response/vote", response);
+        throw new NotImplementedException();
     }
-    catch (HttpRequestException)
+
+    public Task HBRecivedAsync(int reciverId)
     {
-      Console.WriteLine($"node {Url} is down");
+        throw new NotImplementedException();
     }
-  }
- 
-  public async Task SendCommand(ClientCommandData data)
-  {
-    await client.PostAsJsonAsync(Url + "/request/command", data);
-  }
 }

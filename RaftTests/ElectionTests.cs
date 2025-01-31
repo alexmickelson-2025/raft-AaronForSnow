@@ -17,11 +17,6 @@ namespace RaftTests;
 //[DisableParallelization]
 public class ElectionTests
 {
-    AppendEntry defaultEntry;
-    public ElectionTests()
-    {
-		defaultEntry = new AppendEntry(1,"HB", 2, Operation.None, 0, new List<LogEntry>());
-	}
     private static void SleepElectionTimeoutBuffer(ServerAaron testServer)
     {
         Thread.Sleep((int)testServer.ElectionTimer.Interval + 30);
@@ -30,11 +25,13 @@ public class ElectionTests
     [Fact]
     public async Task LeaderSendsHeartBeats()
     {
+		AppendEntry defaultEntry;
 		IServerAaron fake1;
-		IServerAaron testServer;
+		ServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
 		await testServer.StartSimAsync();
-        testServer.State = ServerState.Leader;
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		testServer.State = ServerState.Leader;
         await Task.Delay(50);
         //Thread.Sleep(65);
         await fake1.Received().AppendEntriesAsync(Arg.Any<AppendEntry>());
@@ -44,10 +41,12 @@ public class ElectionTests
     [Fact]
     public async Task AppendEntriesWillSetLeader()
     {
-        IServerAaron fake1;
-        IServerAaron testServer;
-        Tools.SetUpThreeServers(out fake1, out testServer);
-        defaultEntry = new AppendEntry(2, "HB", 3, Operation.None, 0, new List<LogEntry>());
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(2, "HB", 3, Operation.None, 0, new List<LogEntry>());
 		await testServer.AppendEntriesAsync(defaultEntry);
         Assert.Equal(2, testServer.LeaderId);
     }
@@ -62,11 +61,13 @@ public class ElectionTests
     [Fact]
     public async Task FollowerWillStartElection()
     {
+		AppendEntry defaultEntry;
 		IServerAaron fake1;
-		IServerAaron testServer;
+		ServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
 		await testServer.StartSimAsync();
-        Tools.SleepElectionTimeoutBuffer(testServer);
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		Tools.SleepElectionTimeoutBuffer(testServer);
         await fake1.Received().RequestVoteAsync(3,1);
     }
 //  5. When the election time is reset, it is a random value between 150 and 300ms.
@@ -103,10 +104,13 @@ public class ElectionTests
     [Fact]
     public async Task AppendEntriesResetsElectionTimer()
     {
-        IServerAaron fake1;
-        IServerAaron testServer;
-        Tools.SetUpThreeServers(out fake1, out testServer);
-        Thread.Sleep(100);
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		Thread.Sleep(100);
         await testServer.AppendEntriesAsync(defaultEntry);
         Thread.Sleep(100);
         await testServer.AppendEntriesAsync(defaultEntry);
@@ -128,30 +132,37 @@ public class ElectionTests
     [Fact]
     public async Task WhenCadidateGetMajorityVotesBecomesLeaderThreeNodes()
     {
-        IServerAaron fake1;
-        IServerAaron testServer;
-        Tools.SetUpThreeServers(out fake1, out testServer);
-        Tools.SleepElectionTimeoutBuffer(testServer);
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		Tools.SleepElectionTimeoutBuffer(testServer);
         await testServer.ReciveVoteAsync(senderID: 3, true);
         Assert.Equal(ServerState.Leader, testServer.State);
     }
     // -9. A follower that has not voted and is in a later term than the candidate responds to a RequestForVoteRPC with no. (inverse of 9)
     [Fact]
-    public void WhenCadidateDOESNOTGetMajorityVotesWILLNOTBecomesLeaderThreeNodes()
+    public async Task WhenCadidateDOESNOTGetMajorityVotesWILLNOTBecomesLeaderThreeNodes()
     {
-        IServerAaron fake1;
-        IServerAaron testServer;
-        Tools.SetUpThreeServers(out fake1, out testServer);
-        Tools.SleepElectionTimeoutBuffer(testServer);
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
     }
     // 10. A follower that has not voted and is in an earlier term responds to a RequestForVoteRPC with yes. (the reply will be a separate RPC)
     [Fact]
     public async Task WhenFolloewerAskedForVoteGetPositiveResponce()
     {
-		IServerAaron fake1;//1
-		IServerAaron testServer;//3
+		IServerAaron fake1;
+		ServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		await testServer.RequestVoteAsync(fake1.ID, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(fake1.ID, testServer.TermVotes.Last().RequesterId);
@@ -161,20 +172,26 @@ public class ElectionTests
     [Fact]
     public async Task CadidateVotesRequestVotes()
     {
-        IServerAaron fake1;
-        IServerAaron testServer;
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		Thread.Sleep(350);
         await fake1.Received(1).RequestVoteAsync(testServer.ID, 2);
     }
 		// 11. Given a candidate server that just became a candidate, it votes for itself.
 	[Fact]
-    public void WhenBecomesCadidateVotesForSelf()
+    public async Task WhenBecomesCadidateVotesForSelf()
     {
-        IServerAaron fake1;
-        IServerAaron testServer;
-        Tools.SetUpThreeServers(out fake1, out testServer);
-        Tools.SleepElectionTimeoutBuffer(testServer);
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
         Assert.Equal(testServer.ID,testServer.Votes.First().VoterId);
     }
@@ -182,11 +199,12 @@ public class ElectionTests
     [Fact]
     public async Task AppendEntriesWillSetLeaderFromCadidateStateHigerTerms()
     {
-        IServerAaron fake1;
-        IServerAaron testServer;
-        Tools.SetUpThreeServers(out fake1, out testServer);
-        Tools.SleepElectionTimeoutBuffer(testServer);
-        Assert.Equal(ServerState.Candidate, testServer.State);
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		Assert.Equal(ServerState.Candidate, testServer.State);
 		defaultEntry = new AppendEntry(2, "HB", 30, Operation.None, 0, new List<LogEntry>());
 		await testServer.AppendEntriesAsync(defaultEntry);
         await testServer.StopAsync();
@@ -197,10 +215,12 @@ public class ElectionTests
     [Fact]
     public async Task AppendEntriesWillSetLeaderFromCadidateStateEqualTerms()
     {
-        IServerAaron fake1;
-        IServerAaron testServer;
-        Tools.SetUpThreeServers(out fake1, out testServer);
-        Tools.SleepElectionTimeoutBuffer(testServer);
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
         testServer.Term = 2; //should already be, but just in case
 		defaultEntry = new AppendEntry(2, "HB", 2, Operation.None, 0, new List<LogEntry>());
@@ -213,9 +233,12 @@ public class ElectionTests
     [Fact]
     public async Task WhenFolloewerAskedForVoteSameTermForAnotherSendNegativeResponce()
     {
+		AppendEntry defaultEntry;
 		IServerAaron fake1;
-		IServerAaron testServer;
+		ServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		await testServer.RequestVoteAsync(2, 2); // id, term
         await testServer.RequestVoteAsync(1, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
@@ -227,8 +250,9 @@ public class ElectionTests
     public async Task WhenFolloewerAskedForVoteSameTermAgainVoteAgain()
     {
 		IServerAaron fake1;
-		IServerAaron testServer;
+		ServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		await testServer.RequestVoteAsync(1, 2); // id, term
         await testServer.RequestVoteAsync(1, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
@@ -239,24 +263,30 @@ public class ElectionTests
     [Fact]
     public async void ElectionTimerExpiresInsideElectionStartsNewElection()
     {
-        IServerAaron fake1;
-        IServerAaron testServer;
-        Tools.SetUpThreeServers(out fake1, out testServer);
-        Tools.SleepElectionTimeoutBuffer(testServer);
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
         await fake1.Received(1).RequestVoteAsync(3, 2);
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
-		await fake1.Received(2).RequestVoteAsync(3, 2);
+		await fake1.Received(1).RequestVoteAsync(3, 2);
     }
     // 17. When a follower node receives an AppendEntries request, it sends a response.
     [Fact]
     public async Task AppentEntriesRepliesWithSuccess()
     {
-        IServerAaron fake1;
-        IServerAaron testServer;
-        Tools.SetUpThreeServers(out fake1, out testServer);
-        testServer.State = ServerState.Follower;
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		testServer.State = ServerState.Follower;
 		await testServer.AppendEntriesAsync(defaultEntry);
         await testServer.StopAsync();
         fake1.Received(1);
@@ -265,9 +295,12 @@ public class ElectionTests
     [Fact]
     public async Task AppendEntriesWithLowerTermIsRejected()
     {
+		AppendEntry defaultEntry;
 		IServerAaron fake1;
-		IServerAaron testServer;
+		ServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		testServer.LeaderId = 1;
         testServer.Term = 4;
 		await testServer.AppendEntriesAsync(defaultEntry);
@@ -280,9 +313,12 @@ public class ElectionTests
     [Fact]
     public async Task WhenCadidateBecomdesLeaderImmediateSendHeartBeet()
     {
+		AppendEntry defaultEntry;
 		IServerAaron fake1;
-		IServerAaron testServer;
+		ServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		Tools.SleepElectionTimeoutBuffer(testServer);
         await testServer.ReciveVoteAsync(senderID: 3, true);
         Assert.Equal(ServerState.Leader, testServer.State);

@@ -9,19 +9,15 @@ namespace RaftTests;
 
 public class TalkingTests
 {
-    IServerAaron fake1;
-    IServerAaron testServer;
-    AppendEntry defaultEntry; 
-	public TalkingTests() {
-        
-        Tools.SetUpThreeServers(out fake1, out testServer);
-        testServer.nextIndexes = new List<int>() { 0,0 };
-        defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
-	}
     [Fact]
     public async Task FollowerRespondsToAppendEntriesToLeader()
     {
-        //testServer.StartSim();
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		defaultEntry = new AppendEntry(1, "anything not HB", 2, Operation.None, 0, new List<LogEntry>());
 		await testServer.AppendEntriesAsync(defaultEntry);
         await fake1.Received(1).ConfirmAsync(2, 3); //term 2 from server 3
@@ -29,13 +25,25 @@ public class TalkingTests
     [Fact]
     public async Task FollowerRespondsToVoteRequestPositive()
     {
-        await testServer.RequestVoteAsync(1, 2);
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		await testServer.RequestVoteAsync(1, 2);
         await fake1.Received(1).ReciveVoteAsync(3,true);
     }
     [Fact]
     public async Task FollowerRespondsToVoteRequestNegative()
     {
-        await testServer.RequestVoteAsync(2, 2);
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		await testServer.RequestVoteAsync(2, 2);
         await testServer.RequestVoteAsync(1, 2);
         await fake1.Received(1).ReciveVoteAsync(3, false);
     }
@@ -43,7 +51,13 @@ public class TalkingTests
     [Fact]
     public async Task HeartBeatRecivedFromLeader()
     {
-        testServer.State = ServerState.Leader;
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		testServer.State = ServerState.Leader;
         Thread.Sleep(65);
         defaultEntry = new AppendEntry(1, "HB", 0, Operation.Default, 0, new List<LogEntry>());
 
@@ -53,6 +67,12 @@ public class TalkingTests
     [Fact]
     public async Task LeaderRecivesHeartBeatResponce()
     {
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		defaultEntry = new AppendEntry(1, "HB",1, Operation.None, 0, new List<LogEntry>());
 		await testServer.AppendEntriesAsync(defaultEntry);
         await fake1.Received(1).HBRecivedAsync(3);
@@ -60,7 +80,13 @@ public class TalkingTests
     [Fact] //Question for Instructor, Why does this test Fail?
     public async Task NetworkDelayModifiesAppendEntriesConfirm()
     {
-        //testServer.NetworkDelayModifier = 30;
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		//testServer.NetworkDelayModifier = 30;
 		defaultEntry = new AppendEntry(1, "test", 2, Operation.None, 0, new List<LogEntry>());
 		await testServer.AppendEntriesAsync(defaultEntry);
         //fake1.Received(0).Confirm(2, 3);
@@ -71,7 +97,13 @@ public class TalkingTests
     [Fact]
 	public async Task WhenCadidateGetMajorityVotesBecomesLeaderThreeNodes()
 	{
-        testServer.Votes = new List<Vote>() { new Vote(3, true) };
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
+		testServer.Votes = new List<Vote>() { new Vote(3, true) };
 		await testServer.ReciveVoteAsync(senderID: 1, true);
 		await testServer.ReciveVoteAsync(senderID: 2, true);
 		Assert.Equal(ServerState.Leader, testServer.State);
@@ -80,6 +112,12 @@ public class TalkingTests
 	[Fact]
 	public async Task WhenFolloewerAskedForVoteGetPositiveResponce()
 	{
+		AppendEntry defaultEntry;
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
+		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		await testServer.RequestVoteAsync(1, 2); // id, term
 		Assert.Equal(ServerState.Follower, testServer.State);
 		Assert.Equal(1, testServer.TermVotes.Last().RequesterId);

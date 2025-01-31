@@ -13,17 +13,14 @@ namespace RaftTests;
 
 public class LoggingTests
 {
-	IServerAaron fake1;
-	IServerAaron testServer;
-	public LoggingTests()
-	{
-		Tools.SetUpThreeServers(out fake1, out testServer);
-		testServer.nextIndexes = new List<int>() { 0,0 };
-	}
 	// 1. when a leader receives a client command the leader sends the log entry in the next appendentries RPC to all nodes
 	[Fact]
 	public async Task WhenLeaderGetsCommandFromClientItAddsLogToNextHeartBeat()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		testServer.State = ServerState.Leader;
 		testServer.Term = 1;
 		await testServer.ClientRequestAsync("my request");
@@ -39,6 +36,10 @@ public class LoggingTests
 	[Fact]
 	public async Task WhenLeaderGetsCommandFromClientItAddsTOLog()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		testServer.State = ServerState.Leader;
 		testServer.Term = 1;
 		await testServer.ClientRequestAsync("my request for This Test");
@@ -50,12 +51,19 @@ public class LoggingTests
 	[Fact]
 	public void WhenNodeIsNewLogIsEmpty()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
 		Assert.Empty(testServer.Log);
 	}
 	// 4. when a leader wins an election, it initializes the nextIndex for each follower to the index just after the last one it its log
 	[Fact]
 	public async Task WhenLeaderElectedItMatchesNextIndexForEachFollowerToItsLog()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		testServer.Log = [
 			new LogEntry(1,Operation.None, "first"), //0
 			new LogEntry(1,Operation.None, "second"), //1
@@ -82,6 +90,10 @@ public class LoggingTests
 	[Fact]
 	public async Task WhenElectedLeaderInitializesNextIndexList()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		testServer.nextIndexes.Clear();
 		Thread.Sleep(350);// will have gone into canidate state
 		await testServer.ReciveVoteAsync(1, true);
@@ -93,6 +105,10 @@ public class LoggingTests
 	[Fact]
 	public async Task WhenElectedLeaderAsksForCommitedIndexOfAllServers()//to set the nextIndex Value
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		testServer.nextIndexes.Clear();
 		Thread.Sleep(350);// will have gone into canidate state
 		await testServer.ReciveVoteAsync(1, true);
@@ -103,6 +119,10 @@ public class LoggingTests
 	[Fact]
 	public async Task RespondsToCommitIndexRequest()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		testServer.Log.Add(new LogEntry(1,Operation.None, "first"));
 		testServer.commitIndex = 1;
 		await testServer.AppendEntriesAsync(new AppendEntry(1, "REQUEST COMMIT INDEX", 2, Operation.None, 3, new List<LogEntry>(), 0));
@@ -115,12 +135,19 @@ public class LoggingTests
 	[Fact]
 	public void LeadersTrackNextIndexes()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
 		Assert.Equal(testServer.nextIndexes.Count, testServer.OtherServers.Count);
 	}
 	// 6. Highest committed index from the leader is included in AppendEntries RPC's
 	[Fact]
 	public async Task CommittedIndexIncludedInLeaderAppendEntriesHeartBeat()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		testServer.State = ServerState.Leader;
 		Thread.Sleep(60);
 		await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.commitedIndex == -1));//none, commited yet
@@ -129,6 +156,10 @@ public class LoggingTests
 	[Fact]
 	public async Task NextIndexIncludedInAppendEntries()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		testServer.State = ServerState.Leader;
 		Thread.Sleep(60);
 		await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.nextIndex == 0));//none, commited yet
@@ -138,6 +169,10 @@ public class LoggingTests
 	[Fact]
 	public async Task LeaderConfirmsAppendEntriesResponce()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		testServer.State = ServerState.Leader;
 		testServer.Term = 1;
 		testServer.Log.Add(new LogEntry(1,Operation.Default, "one"));
@@ -150,6 +185,10 @@ public class LoggingTests
 	[Fact]
 	public async Task LeaderCommitsLogThenAppliesToStateMachine()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		testServer.State = ServerState.Leader;
 		testServer.Term = 1;
 		testServer.Log.Add(new LogEntry(1, Operation.Default, "one"));
@@ -164,6 +203,10 @@ public class LoggingTests
 	[Fact]
 	public async Task FollowerIncreasesCommitIndexToMatchLeaderAppendEntry()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		testServer.Log = [
 			new LogEntry(1,Operation.None, "first"), //0
 			new LogEntry(1,Operation.None, "second"), //1
@@ -181,6 +224,10 @@ public class LoggingTests
 	[Fact]
 	public async Task FollowerDoesNotIncreasesCommitIndexToMatchLeaderAppendEntryWhenTermTooHigh()
 	{
+		IServerAaron fake1;
+		ServerAaron testServer;
+		Tools.SetUpThreeServers(out fake1, out testServer);
+		await testServer.StartSimAsync();
 		testServer.Log = [
 			new LogEntry(1,Operation.None, "first"), //0
 			new LogEntry(1,Operation.None, "second"), //1
