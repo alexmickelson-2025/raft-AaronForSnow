@@ -30,9 +30,7 @@ public class LoggingTests
 		Thread.Sleep(65);
 		await testServer.StopAsync();
 		LogEntry entry = new LogEntry(1, Operation.Default, "my request");
-		Assert.Single(testServer.Sentmessages);
-
-		Assert.Equal("HB", testServer.Sentmessages[0]);
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "HB"));
 		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.newLogs.Count == 1));
 		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.term == 1)); 
 		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.newLogs[0] == entry)); 
@@ -46,7 +44,6 @@ public class LoggingTests
 		await testServer.ClientRequestAsync("my request for This Test");
 		await testServer.StopAsync();
 		LogEntry entry = new LogEntry(1, Operation.Default, "my request for This Test");
-		Assert.Empty(testServer.Sentmessages);
 		Assert.Equal("my request for This Test", testServer.Log[0].uniqueValue);
 	}
 	// 3. when a node is new, its log is empty]
@@ -215,6 +212,7 @@ public class LoggingTests
 	//	Assert.Equal(1, testServer.commitIndex);
 	//	Assert.Equal("", testServer.StateMachineDataBucket);
 	//}
+
 	// 11. When sending an AppendEntries RPC, the leader includes the index and term of the entry in its log that immediately precedes the new entries
 	//		1. If the follower does not find an entry in its log with the same index and term, then it refuses the new entries
 	//          1. term must be same or newer

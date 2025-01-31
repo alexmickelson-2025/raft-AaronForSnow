@@ -16,7 +16,6 @@ public class ServerAaron : IServerAaron
     private int NumServers { get => OtherServers.Count + 1; }
     public int ElectionTimeoutMultiplier { get; set; }
     public int NetworkDelayModifier { get; set; }
-    public List<string> Sentmessages { get; set; }
     public List<Vote> Votes { get; set; }
     public List<TermVote> TermVotes { get; set; }
     public List<IServerAaron> OtherServers { get; set; }
@@ -37,7 +36,6 @@ public class ServerAaron : IServerAaron
 		TermVotes = new List<TermVote>();
         Votes = new List<Vote>();
 		State = ServerState.Follower;
-		Sentmessages = new List<string>();
 		OtherServers = new List<IServerAaron>();
         Log = new List<LogEntry>();
         confirmesRecived = new List<Confirmaiton>();
@@ -75,15 +73,6 @@ public class ServerAaron : IServerAaron
     {
         if(State == ServerState.Leader)
         {
-            SelfLog("HB", Operation.None, -1);
-            //List<LogEntry> newEntries = new List<LogEntry>();
-            //for (int i = 0; i < Log.Count; i++)
-            //{
-            //    if (i > commitIndex)
-            //    {
-            //        newEntries.Add(Log[i]);
-            //    }
-            //}
             foreach (var server in OtherServers)
             {
 				int indexInIndexes = getServerPositionInNextIndexes(server.ID);
@@ -105,7 +94,6 @@ public class ServerAaron : IServerAaron
         resetElectionTimer();
 		State = ServerState.Candidate;
         ++Term;
-        SelfLog("Election Request", Operation.None, -1);
         Votes = new List<Vote>() { new Vote(ID, true) };
         await tallyVotesAsync();
         foreach (IServerAaron node in OtherServers)
@@ -143,7 +131,6 @@ public class ServerAaron : IServerAaron
     }
     private void SelfLog(string message, Operation com, int term)
     {
-        Sentmessages.Add(message);
         if (com is not Operation.None && term != -1)
             Log.Add(new LogEntry(term, com, message));
     }
@@ -184,7 +171,8 @@ public class ServerAaron : IServerAaron
 		}
 		else
         {
-            SelfLog($"Leader is {LeaderId}", Entry.command, Entry.term);
+			var message = new AppendEntry(ID, $"Leader is {LeaderId}", Term, Operation.None, commitIndex, new List<LogEntry>(), Log.Count);
+			await sender.AppendEntriesAsync(message);
 		}
     }
 
@@ -204,7 +192,7 @@ public class ServerAaron : IServerAaron
 	{
 		LeaderId = Entry.senderID;
 		State = ServerState.Follower;
-		SelfLog("AppendReceived", Entry.command, Entry.term);
+		//SelfLog("AppendReceived", Entry.command, Entry.term);
 		resetElectionTimer();
 		if (sender.ID != -1)
 		{ await sender.ConfirmAsync(Entry.term, ID); }
@@ -245,11 +233,10 @@ public class ServerAaron : IServerAaron
 		IServerAaron sender = OtherServers.FirstOrDefault(s => s.ID == requesterId) ?? new ServerAaron(-1);
 		if (termVotedId == requesterId) //Repeted Vote
         {
-            SelfLog("Positive Vote", Operation.None, -1);
+            return;
         }
         else if (termVotedId != requesterId && termVotedId != 0)
         {
-            SelfLog("Rejected Vote", Operation.None, -1);
             if (sender.ID != -1)
                 await sender.ReciveVoteAsync(ID, false);
         }
@@ -258,7 +245,6 @@ public class ServerAaron : IServerAaron
             TermVotes.Add(new TermVote(requesterId, term));
 			if (sender.ID != -1)
 				await sender.ReciveVoteAsync(ID, true);
-            SelfLog("Positive Vote", Operation.None, -1);
 			ElectionTimer.Stop();
 			resetElectionTimer();
 		}

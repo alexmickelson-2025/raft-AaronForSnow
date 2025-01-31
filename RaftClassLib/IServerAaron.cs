@@ -5,8 +5,7 @@
     public interface IServerAaron
     {
         public ServerState State {get; set;}
-        public string StateMachineDataBucket {get;}
-        public List<string> Sentmessages { get; set;}   
+        public string StateMachineDataBucket {get;}  
         public Timer ElectionTimer { get; set;}
         public bool IsLive { get; set;}
         public int LeaderId { get; set;}

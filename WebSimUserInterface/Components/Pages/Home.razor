@@ -52,7 +52,7 @@ Welcome to your new app.
 			<ul style="list-style-type: none; padding-left: 0;">
 				<li><label>ID: </label>@node.ID</li>
 				<li><label>Term: </label>@node.Term</li>
-				<li><label>State: </label>@node.State</li>
+				<li><label>Server State: </label>@node.State</li>
 				<li><label>Election Timeout: </label>@node.ElectionTimer.Interval ms</li>
 				<li><label>Leader ID: </label>@node.LeaderId</li>
 				@* @foreach (var vote in node.Votes)
@@ -60,6 +60,19 @@ Welcome to your new app.
 					<div>Voter Id:  @vote.VoterId</div>
 					<div>Was Positive: @vote.PositiveVote</div>
 				} *@
+				<li><label>State Machine: </label>@node.StateMachineDataBucket</li>
+				<li><label>CommitIndex: </label>@node.commitIndex</li>
+				@for (int i = 0;i < node.Log.Count; i++)
+				{
+					<div>Entry: @node.Log[i].uniqueValue</div>
+					<div>Index: @i</div>
+					<div>Commited: @if (i <= node.commitIndex)
+						{
+							<>true</>
+						}
+						else { <>false</> }
+					</div>
+				}
 			</ul>
 		</div>
 	}
