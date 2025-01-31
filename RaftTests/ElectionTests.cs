@@ -54,7 +54,7 @@ public class ElectionTests
     [Fact]
     public void ServerStartsInFollowerMode()
     {
-        IServerAaron testServer = new ServerAaron(1);
+        ServerAaron testServer = new ServerAaron(1);
         Assert.Equal(ServerState.Follower, testServer.State);
     }
     //  4. When a follower doesn't get a message for 300ms then it starts an election.
@@ -78,7 +78,7 @@ public class ElectionTests
     {
         List<double> t = new List<double>();
         for (int i = 0; i < 4; i++) {
-            IServerAaron testServer = new ServerAaron(1);
+            ServerAaron testServer = new ServerAaron(1);
             await testServer.StartSimAsync();
             Assert.True(testServer.ElectionTimer.Interval >= 150);
             Assert.True(testServer.ElectionTimer.Interval <= 300);
@@ -94,7 +94,7 @@ public class ElectionTests
     [Fact]
     public async Task ElectionWillBeginsWithHigherTerm()
     {
-        IServerAaron testServer = new ServerAaron(1);
+        ServerAaron testServer = new ServerAaron(1);
         await testServer.StartSimAsync();
         testServer.Term = 1;
         Tools.SleepElectionTimeoutBuffer(testServer);

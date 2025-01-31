@@ -10,22 +10,19 @@ public class SimulationNode : IServerAaron
         this.InnerNode = innerNode;
     }
 
-	public ServerState State { get => ((IServerAaron)InnerNode).State; set => ((IServerAaron)InnerNode).State = value; }
-	public System.Timers.Timer ElectionTimer { get => ((IServerAaron)InnerNode).ElectionTimer; set => ((IServerAaron)InnerNode).ElectionTimer = value; }
-	public bool IsLive { get => ((IServerAaron)InnerNode).IsLive; set => ((IServerAaron)InnerNode).IsLive = value; }
-	public int LeaderId { get => ((IServerAaron)InnerNode).LeaderId; set => ((IServerAaron)InnerNode).LeaderId = value; }
-	public int ID { get => ((IServerAaron)InnerNode).ID; set => ((IServerAaron)InnerNode).ID = value; }
-	public int Term { get => ((IServerAaron)InnerNode).Term; set => ((IServerAaron)InnerNode).Term = value; }
-	public int ElectionTimeoutMultiplier { get => ((IServerAaron)InnerNode).ElectionTimeoutMultiplier; set => ((IServerAaron)InnerNode).ElectionTimeoutMultiplier = value; }
-	public int NetworkDelayModifier { get => ((IServerAaron)InnerNode).NetworkDelayModifier; set => ((IServerAaron)InnerNode).NetworkDelayModifier = value; }
-	public List<Vote> Votes { get => ((IServerAaron)InnerNode).Votes; set => ((IServerAaron)InnerNode).Votes = value; }
-	public List<TermVote> TermVotes { get => ((IServerAaron)InnerNode).TermVotes; set => ((IServerAaron)InnerNode).TermVotes = value; }
-	public List<IServerAaron> OtherServers { get => ((IServerAaron)InnerNode).OtherServers; set => ((IServerAaron)InnerNode).OtherServers = value; }
-	public List<LogEntry> Log { get => ((IServerAaron)InnerNode).Log; set => ((IServerAaron)InnerNode).Log = value; }
-	public int commitIndex { get => ((IServerAaron)InnerNode).commitIndex; set => ((IServerAaron)InnerNode).commitIndex = value; }
-	public List<int> nextIndexes { get => ((IServerAaron)InnerNode).nextIndexes; set => ((IServerAaron)InnerNode).nextIndexes = value; }
+	public ServerState State { get => InnerNode.State; set => InnerNode.State = value; }
+	public System.Timers.Timer ElectionTimer { get => InnerNode.ElectionTimer; set => InnerNode.ElectionTimer = value; }
+	public bool IsLive { get => InnerNode.IsLive; set => InnerNode.IsLive = value; }
+	public int LeaderId { get => InnerNode.LeaderId; set => InnerNode.LeaderId = value; }
+	public int ID { get => InnerNode.ID; set => InnerNode.ID = value; }
+	public int Term { get => InnerNode.Term; set => InnerNode.Term = value; }
+	public int ElectionTimeoutMultiplier { get => InnerNode.ElectionTimeoutMultiplier; set => InnerNode.ElectionTimeoutMultiplier = value; }
+	public int NetworkDelayModifier { get => InnerNode.NetworkDelayModifier; set => InnerNode.NetworkDelayModifier = value; }
+	public List<LogEntry> Log { get => InnerNode.Log; set => InnerNode.Log = value; }
+	public int commitIndex { get => InnerNode.commitIndex; set => InnerNode.commitIndex = value; }
+	public List<int> nextIndexes { get => InnerNode.nextIndexes; set => InnerNode.nextIndexes = value; }
 
-	public string StateMachineDataBucket => ((IServerAaron)InnerNode).StateMachineDataBucket;
+	public string StateMachineDataBucket => InnerNode.StateMachineDataBucket;
 
 	public Task AppendEntriesAsync(AppendEntry Entry)
 	{

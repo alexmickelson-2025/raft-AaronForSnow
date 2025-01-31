@@ -4,21 +4,7 @@
 	using System.Timers;
     public interface IServerAaron
     {
-        public ServerState State {get; set;}
-        public string StateMachineDataBucket {get;}  
-        public Timer ElectionTimer { get; set;}
-        public bool IsLive { get; set;}
-        public int LeaderId { get; set;}
         public int ID { get; set; }
-        public int Term { get; set; }
-        public int ElectionTimeoutMultiplier { get; set; }
-        public int NetworkDelayModifier { get; set; }
-        public int commitIndex { get; set; }
-        public List<int> nextIndexes { get; set; }
-        public List<Vote> Votes { get; set; }
-        public List<TermVote> TermVotes { get; set; }
-        public List<IServerAaron> OtherServers { get; set; }
-        public List<LogEntry> Log { get; set; }
         Task AppendEntriesAsync(AppendEntry Entry);
         Task StopAsync();
         Task RequestVoteAsync(int requesterId, int term);

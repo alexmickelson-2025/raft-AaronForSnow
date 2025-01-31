@@ -20,7 +20,7 @@ public class LogTests
 	[Fact]
 	public async Task LogEntryContainsComponents()
 	{
-		IServerAaron testServer = new ServerAaron(1);
+		ServerAaron testServer = new ServerAaron(1);
 		await testServer.StartSimAsync();
 		await testServer.AppendEntriesAsync(
 			new AppendEntry(1, "test log", 2, Operation.Default, 0, new List<LogEntry>()));

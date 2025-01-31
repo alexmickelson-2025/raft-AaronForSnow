@@ -9,7 +9,7 @@ namespace RaftClassLib;
 
 public static class Tools
 {
-    public static void SleepElectionTimeoutBuffer(IServerAaron testServer)
+    public static void SleepElectionTimeoutBuffer(ServerAaron testServer)
     {
         Thread.Sleep((int)testServer.ElectionTimer.Interval + 30);
     }
@@ -20,8 +20,6 @@ public static class Tools
         var fake2 = Substitute.For<IServerAaron>();
         fake2.ID = 2;
         testServer = new ServerAaron(3);
-        fake1.OtherServers = [fake2, testServer];
-        fake2.OtherServers = [fake1, testServer];
         testServer.OtherServers = [fake2, fake1];
 		testServer.nextIndexes = new List<int>() { 0, 0 };
     }
