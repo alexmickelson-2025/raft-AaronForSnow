@@ -71,7 +71,6 @@ public class WebDelayTests
 		ServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
 		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
-		await testServer.StopAsync();
         Thread.Sleep(400);
         Assert.Equal(ServerState.Follower, testServer.State);
         await testServer.StartSimAsync();

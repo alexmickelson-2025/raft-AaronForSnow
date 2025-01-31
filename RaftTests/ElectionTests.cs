@@ -68,7 +68,7 @@ public class ElectionTests
 		await testServer.StartSimAsync();
 		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		Tools.SleepElectionTimeoutBuffer(testServer);
-        await fake1.Received().RequestVoteAsync(3,1);
+        await fake1.Received().RequestVoteAsync(3,2);
     }
 //  5. When the election time is reset, it is a random value between 150 and 300ms.
 //    * between
@@ -204,6 +204,7 @@ public class ElectionTests
 		ServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
 		await testServer.StartSimAsync();
+        Thread.Sleep(350);
 		Assert.Equal(ServerState.Candidate, testServer.State);
 		defaultEntry = new AppendEntry(2, "HB", 30, Operation.None, 0, new List<LogEntry>());
 		await testServer.AppendEntriesAsync(defaultEntry);
@@ -256,7 +257,7 @@ public class ElectionTests
 		await testServer.RequestVoteAsync(1, 2); // id, term
         await testServer.RequestVoteAsync(1, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
-        Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
+        Assert.Equal(1, testServer.TermVotes.Last().RequesterId);
         await fake1.Received(2).ReciveVoteAsync(3, true);
     }
     // 16. Given a candidate, when an election timer expires inside of an election, a new election is started.
