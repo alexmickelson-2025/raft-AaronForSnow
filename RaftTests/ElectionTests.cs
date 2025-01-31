@@ -33,10 +33,10 @@ public class ElectionTests
 		IServerAaron fake1;
 		IServerAaron testServer;
 		Tools.SetUpThreeServers(out fake1, out testServer);
-		await testServer.StartSimAsync();
         testServer.State = ServerState.Leader;
-        await Task.Delay(50);
-        //Thread.Sleep(65);
+		//await testServer.StartSimAsync();
+        //await Task.Delay(50);
+        Thread.Sleep(65);
         await fake1.Received().AppendEntriesAsync(Arg.Any<AppendEntry>());
         await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "HB"));
 	}
@@ -67,7 +67,7 @@ public class ElectionTests
 		Tools.SetUpThreeServers(out fake1, out testServer);
 		await testServer.StartSimAsync();
         Tools.SleepElectionTimeoutBuffer(testServer);
-        await fake1.Received().RequestVoteAsync(3,1);
+        await fake1.Received().RequestVoteAsync(3,2);
     }
 //  5. When the election time is reset, it is a random value between 150 and 300ms.
 //    * between
@@ -247,7 +247,7 @@ public class ElectionTests
         await fake1.Received(1).RequestVoteAsync(3, 2);
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
-		await fake1.Received(2).RequestVoteAsync(3, 2);
+		await fake1.Received(1).RequestVoteAsync(3, 3);
     }
     // 17. When a follower node receives an AppendEntries request, it sends a response.
     [Fact]

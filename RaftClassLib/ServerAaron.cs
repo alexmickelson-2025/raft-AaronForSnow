@@ -192,7 +192,7 @@ public class ServerAaron : IServerAaron
 	{
 		LeaderId = Entry.senderID;
 		State = ServerState.Follower;
-		//SelfLog("AppendReceived", Entry.command, Entry.term);
+		SelfLog(Entry.entry, Entry.command, Entry.term);
 		resetElectionTimer();
 		if (sender.ID != -1)
 		{ await sender.ConfirmAsync(Entry.term, ID); }
