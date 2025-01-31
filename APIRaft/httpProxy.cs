@@ -2,13 +2,13 @@ using RaftClassLib;
 
 public class HttpRpcOtherNode : INode
 {
-    public int Id { get; }
+    public int ID { get; }
     public string Url { get; }
     private HttpClient client = new();
 
     public HttpRpcOtherNode(int id, string url)
     {
-        Id = id;
+        ID = id;
         Url = url;
     }
 
