@@ -68,7 +68,7 @@ public class ElectionTests
 		await testServer.StartSimAsync();
 		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		Tools.SleepElectionTimeoutBuffer(testServer);
-        await fake1.Received().RequestVoteAsync(3,2);
+        await fake1.Received().RequestVoteAsync(new RequestVoteDTO(3,2));
     }
 //  5. When the election time is reset, it is a random value between 150 and 300ms.
 //    * between
@@ -166,7 +166,7 @@ public class ElectionTests
 		await testServer.RequestVoteAsync(fake1.ID, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(fake1.ID, testServer.TermVotes.Last().RequesterId);
-        await fake1.Received(1).ReciveVoteAsync(senderID: testServer.ID, true);
+        await fake1.Received(1).ReciveVoteAsync(new ReceiveVoteDTO(testServer.ID, true));
     }
     // 10.5 When I am a candidate I request votes from other servers
     [Fact]
@@ -179,7 +179,7 @@ public class ElectionTests
 		await testServer.StartSimAsync();
 		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		Thread.Sleep(350);
-        await fake1.Received(1).RequestVoteAsync(testServer.ID, 2);
+        await fake1.Received(1).RequestVoteAsync(new RequestVoteDTO(testServer.ID, 2));
     }
 		// 11. Given a candidate server that just became a candidate, it votes for itself.
 	[Fact]
@@ -244,7 +244,7 @@ public class ElectionTests
         await testServer.RequestVoteAsync(1, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(2, testServer.TermVotes.Last().RequesterId);
-        await fake1.Received().ReciveVoteAsync(3, false);
+        await fake1.Received().ReciveVoteAsync(new ReceiveVoteDTO(3, false));
     }
     // 15. If a node receives a second request for vote for a future term, it should vote for that node.
     [Fact]
@@ -258,7 +258,7 @@ public class ElectionTests
         await testServer.RequestVoteAsync(1, 2); // id, term
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(1, testServer.TermVotes.Last().RequesterId);
-        await fake1.Received(2).ReciveVoteAsync(3, true);
+        await fake1.Received(2).ReciveVoteAsync(new ReceiveVoteDTO(3, true));
     }
     // 16. Given a candidate, when an election timer expires inside of an election, a new election is started.
     [Fact]
@@ -272,10 +272,10 @@ public class ElectionTests
 		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
-        await fake1.Received(1).RequestVoteAsync(3, 2);
+        await fake1.Received(1).RequestVoteAsync(new RequestVoteDTO(3, 2));
         Tools.SleepElectionTimeoutBuffer(testServer);
         Assert.Equal(ServerState.Candidate, testServer.State);
-		await fake1.Received(1).RequestVoteAsync(3, 2);
+		await fake1.Received(1).RequestVoteAsync(new RequestVoteDTO(3, 2));
     }
     // 17. When a follower node receives an AppendEntries request, it sends a response.
     [Fact]

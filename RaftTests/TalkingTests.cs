@@ -20,7 +20,7 @@ public class TalkingTests
 		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		defaultEntry = new AppendEntry(1, "anything not HB", 2, Operation.None, 0, new List<LogEntry>());
 		await testServer.AppendEntriesAsync(defaultEntry);
-        await fake1.Received(1).ConfirmAsync(2, 3); //term 2 from server 3
+        await fake1.Received(1).ConfirmAsync(new ConfirmationDTO(2, 3)); //term 2 from server 3
     }
     [Fact]
     public async Task FollowerRespondsToVoteRequestPositive()
@@ -32,7 +32,7 @@ public class TalkingTests
 		await testServer.StartSimAsync();
 		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		await testServer.RequestVoteAsync(1, 2);
-        await fake1.Received(1).ReciveVoteAsync(3,true);
+        await fake1.Received(1).ReciveVoteAsync(new ReceiveVoteDTO(3,true));
     }
     [Fact]
     public async Task FollowerRespondsToVoteRequestNegative()
@@ -45,7 +45,7 @@ public class TalkingTests
 		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		await testServer.RequestVoteAsync(2, 2);
         await testServer.RequestVoteAsync(1, 2);
-        await fake1.Received(1).ReciveVoteAsync(3, false);
+        await fake1.Received(1).ReciveVoteAsync(new ReceiveVoteDTO(3, false));
     }
     //  1. When a leader is active it sends a heart beat within 50ms.
     [Fact]
@@ -91,7 +91,7 @@ public class TalkingTests
 		await testServer.AppendEntriesAsync(defaultEntry);
         //fake1.Received(0).Confirm(2, 3);
         Thread.Sleep(350);
-        await fake1.Received(1).ConfirmAsync(2, 3);
+        await fake1.Received(1).ConfirmAsync(new ConfirmationDTO(2, 3));
     }
     //  9. Given a candidate receives a majority of votes while waiting for unresponsive node, it still becomes a leader.
     [Fact]
@@ -121,7 +121,7 @@ public class TalkingTests
 		await testServer.RequestVoteAsync(1, 2); // id, term
 		Assert.Equal(ServerState.Follower, testServer.State);
 		Assert.Equal(1, testServer.TermVotes.Last().RequesterId);
-        await fake1.Received(1).ReciveVoteAsync(3, true);
+        await fake1.Received(1).ReciveVoteAsync(new ReceiveVoteDTO(3, true));
 	}
 
 }

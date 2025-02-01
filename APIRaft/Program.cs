@@ -72,40 +72,27 @@ app.MapGet("/nodeData", () =>
     );
 });
 
-//app.MapPost("/request/appendEntries", async (AppendEntriesData request) =>
-//{
-//    logger.LogInformation("received append entries request {request}", request);
-//    await node.RequestAppendEntries(request);
-//});
-
-//app.MapPost("/request/vote", async (VoteRequestData request) =>
-//{
-//    logger.LogInformation("received vote request {request}", request);
-//    await node.RequestVote(request);
-//});
-
-//app.MapPost("/response/appendEntries", async (RespondEntriesData response) =>
-//{
-//    logger.LogInformation("received append entries response {response}", response);
-//    await node.RespondAppendEntries(response);
-//});
-
-//app.MapPost("/response/vote", async (VoteResponseData response) =>
-//{
-//    logger.LogInformation("received vote response {response}", response);
-//    await node.ResponseVote(response);
-//});
-
-//app.MapPost("/request/command", async (ClientCommandData data) =>
-//{
-//    await node.SendCommand(data);
-//});
 app.MapPost("AppendEntries", async (AppendEntry Entry) => {
+    logger.LogInformation("received append entries {Entry}", Entry);
     await node.AppendEntriesAsync(Entry);
 });
 app.MapPost("StartSim", async (string junk) =>
 {
-    await node.StartSimAsync();
+    logger.LogInformation("received StartSim for node {nodeId}", node.ID);
+	await node.StartSimAsync();
 });
-
+app.MapPost("StopAsync", async (string junk) =>
+{
+    await node.StopAsync();
+});
+//Task RequestVoteAsync(RequestVoteDTO request);
+app.MapPost("RequestVote", async (RequestVoteDTO vote) => {
+	logger.LogInformation("received vote Request {vote}", vote);
+	await node.RequestVoteAsync(vote);
+});
+//Task ConfirmAsync(int term, int reciverId, int indexOfLog = 0);
+//Task HBRecivedAsync(int reciverId);
+//Task ReciveVoteAsync(int senderID, bool v);
+//Task StartSimAsync();
+//Task ClientRequestAsync(string value);
 app.Run();

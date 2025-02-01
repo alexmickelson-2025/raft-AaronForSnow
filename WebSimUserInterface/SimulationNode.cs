@@ -44,23 +44,23 @@ public class SimulationNode : IServerAaron
 		return ((IServerAaron)InnerNode).StopAsync();
 	}
 
-	public Task ReciveVoteAsync(int senderID, bool v)
-	{
-		return ((IServerAaron)InnerNode).ReciveVoteAsync(senderID, v);
-	}
-
-	public Task RequestVoteAsync(int requesterId, int term)
-	{
-		return ((IServerAaron)InnerNode).RequestVoteAsync(requesterId, term);
-	}
-
 	public Task StartSimAsync()
 	{
 		return ((IServerAaron)InnerNode).StartSimAsync();
 	}
 
-	public Task ConfirmAsync(int term, int reciverId, int indexOfLog = 0)
+	public Task RequestVoteAsync(RequestVoteDTO request)
 	{
-		return ((IServerAaron)InnerNode).ConfirmAsync(term, reciverId, indexOfLog);
+		return ((IServerAaron)InnerNode).RequestVoteAsync(request);
+	}
+
+	public Task ConfirmAsync(ConfirmationDTO confirm)
+	{
+		return ((IServerAaron)InnerNode).ConfirmAsync(confirm);
+	}
+
+	public Task ReciveVoteAsync(ReceiveVoteDTO vote)
+	{
+		return ((IServerAaron)InnerNode).ReciveVoteAsync(vote);
 	}
 }

@@ -98,7 +98,7 @@ public class ServerAaron : IServerAaron
         await tallyVotesAsync();
         foreach (IServerAaron node in OtherServers)
         {
-            await node.RequestVoteAsync(ID, Term);
+            await node.RequestVoteAsync(new RequestVoteDTO(ID, Term));
         }
 
     }
@@ -195,7 +195,7 @@ public class ServerAaron : IServerAaron
 		//SelfLog("AppendReceived", Entry.command, Entry.term);
 		resetElectionTimer();
 		if (sender.ID != -1)
-		{ await sender.ConfirmAsync(Entry.term, ID); }
+		{ await sender.ConfirmAsync(new ConfirmationDTO(Entry.term, ID)); }
 	}
 
 	private async Task respondToHeartBeet(AppendEntry Entry, IServerAaron sender)
@@ -214,8 +214,12 @@ public class ServerAaron : IServerAaron
             await Task.Delay(NetworkDelayModifier);
         }
     }
+    public async Task ReciveVoteAsync(ReceiveVoteDTO vote)
+    {
+        await ReciveVoteAsync(vote.SenderID, vote.IsPositiveVote);
+	}
 
-    public async Task ReciveVoteAsync(int senderID, bool positveVote)
+	public async Task ReciveVoteAsync(int senderID, bool positveVote)
     {
         if (!IsLive) { return; }
         Votes.Add(new Vote(senderID, positveVote));
@@ -225,8 +229,11 @@ public class ServerAaron : IServerAaron
         }
         await Task.CompletedTask;
     }
-
-    public async Task RequestVoteAsync(int requesterId, int term)
+    public async Task RequestVoteAsync(RequestVoteDTO vote)
+    {
+        await RequestVoteAsync(vote.RequesterId, vote.Term);
+    }
+	public async Task RequestVoteAsync(int requesterId, int term)
     {
         if (!IsLive) { return; }
         int termVotedId = TermVotes.FirstOrDefault(t => t.Term == term)?.RequesterId ?? 0;
@@ -238,19 +245,22 @@ public class ServerAaron : IServerAaron
         else if (termVotedId != requesterId && termVotedId != 0)
         {
             if (sender.ID != -1)
-                await sender.ReciveVoteAsync(ID, false);
+                await sender.ReciveVoteAsync(new ReceiveVoteDTO(ID, false));
         }
         else // no votes for that term yet
         {
             TermVotes.Add(new TermVote(requesterId, term));
 			if (sender.ID != -1)
-				await sender.ReciveVoteAsync(ID, true);
+				await sender.ReciveVoteAsync(new ReceiveVoteDTO(ID, true));
 			ElectionTimer.Stop();
 			resetElectionTimer();
 		}
     }
-
-    public async Task ConfirmAsync(int term, int reciverId, int indexOfLog = 0)
+    public async Task ConfirmAsync(ConfirmationDTO confirm)
+	{
+        await ConfirmAsync(confirm.Term, confirm.ReciverId, confirm.IndexOfLog);
+    }
+	public async Task ConfirmAsync(int term, int reciverId, int indexOfLog = 0)
     {
         await PosibleDelay();
         Confirmaiton con = new Confirmaiton(term, reciverId, indexOfLog);
@@ -263,7 +273,7 @@ public class ServerAaron : IServerAaron
 			int count = getNumConfirmedForIndex(indexOfLog);
 			if (count >= OtherServers.Count / 2)
 			{
-				await OtherServers.Where(s => s.ID == reciverId).First().ConfirmAsync(term, ID, indexOfLog);
+				await OtherServers.Where(s => s.ID == reciverId).First().ConfirmAsync(new ConfirmationDTO(term, ID, indexOfLog));
 				await CheckCommitedIndexAsync();
 			}
 		}

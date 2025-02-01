@@ -179,7 +179,7 @@ public class LoggingTests
 		testServer.commitIndex = -1;
 		await testServer.ConfirmAsync(1,1,0);//now has majority
 		Thread.Sleep(65);
-		await fake1.Received(1).ConfirmAsync(1, 3, 0); //client now knows it was recived
+		await fake1.Received(1).ConfirmAsync(new ConfirmationDTO(1, 3, 0)); //client now knows it was recived
 	}
 	// 9. given a leader node, when a log is committed, it applies it to its internal state machine
 	[Fact]
