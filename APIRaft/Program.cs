@@ -32,7 +32,7 @@ var logger = app.Services.GetService<ILogger<Program>>();
 logger.LogInformation("Node ID {name}", nodeId);
 logger.LogInformation("Other nodes environment config: {}", otherNodesRaw);
 
-INode[] otherNodes = otherNodesRaw
+IServerAaron[] otherNodes = otherNodesRaw
   .Split(";")
   .Select(s => new HttpRpcOtherNode(int.Parse(s.Split(",")[0]), s.Split(",")[1]))
   .ToArray();
@@ -85,14 +85,25 @@ app.MapPost("StopAsync", async (string junk) =>
 {
     await node.StopAsync();
 });
-//Task RequestVoteAsync(RequestVoteDTO request);
 app.MapPost("RequestVote", async (RequestVoteDTO vote) => {
 	logger.LogInformation("received vote Request {vote}", vote);
 	await node.RequestVoteAsync(vote);
 });
-//Task ConfirmAsync(int term, int reciverId, int indexOfLog = 0);
-//Task HBRecivedAsync(int reciverId);
-//Task ReciveVoteAsync(int senderID, bool v);
-//Task StartSimAsync();
-//Task ClientRequestAsync(string value);
+app.MapPost("Confirm", async (ConfirmationDTO confirm) =>
+{
+    logger.LogInformation("received confirmation {confirmaiton}", confirm);
+    await node.ConfirmAsync(confirm);
+});
+app.MapPost("HBReceived", async (int receiverId) => {
+    logger.LogInformation("received Heart Beat from {receiverId}", receiverId );
+    await node.HBReceivedAsync(receiverId);
+});
+app.MapPost("ReceiveVote", async (ReceiveVoteDTO ballet) => {
+    logger.LogInformation("received vote ballet {ballet}", ballet);
+    await node.ReceiveVoteAsync(ballet);
+});
+app.MapPost("ClientRequest", async (string request) => {
+    logger.LogInformation("received Client Request {request}", request);
+    await node.ClientRequestAsync(request);
+});
 app.Run();

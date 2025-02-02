@@ -203,7 +203,7 @@ public class ServerAaron : IServerAaron
 		LeaderId = Entry.senderID;
 		resetElectionTimer();
 		if (sender.ID != -1)
-			await sender.HBRecivedAsync(ID);
+			await sender.HBReceivedAsync(ID);
 		State = ServerState.Follower;
 	}
 
@@ -214,7 +214,7 @@ public class ServerAaron : IServerAaron
             await Task.Delay(NetworkDelayModifier);
         }
     }
-    public async Task ReciveVoteAsync(ReceiveVoteDTO vote)
+    public async Task ReceiveVoteAsync(ReceiveVoteDTO vote)
     {
         await ReciveVoteAsync(vote.SenderID, vote.IsPositiveVote);
 	}
@@ -245,13 +245,13 @@ public class ServerAaron : IServerAaron
         else if (termVotedId != requesterId && termVotedId != 0)
         {
             if (sender.ID != -1)
-                await sender.ReciveVoteAsync(new ReceiveVoteDTO(ID, false));
+                await sender.ReceiveVoteAsync(new ReceiveVoteDTO(ID, false));
         }
         else // no votes for that term yet
         {
             TermVotes.Add(new TermVote(requesterId, term));
 			if (sender.ID != -1)
-				await sender.ReciveVoteAsync(new ReceiveVoteDTO(ID, true));
+				await sender.ReceiveVoteAsync(new ReceiveVoteDTO(ID, true));
 			ElectionTimer.Stop();
 			resetElectionTimer();
 		}
@@ -310,7 +310,7 @@ public class ServerAaron : IServerAaron
     }
 
 
-	public async Task HBRecivedAsync(int reciverId)
+	public async Task HBReceivedAsync(int reciverId)
     {
         await PosibleDelay();
         await Task.CompletedTask;

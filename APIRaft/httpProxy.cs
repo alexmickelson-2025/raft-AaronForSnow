@@ -1,8 +1,8 @@
 using RaftClassLib;
 
-public class HttpRpcOtherNode : INode
+public class HttpRpcOtherNode : IServerAaron
 {
-    public int ID { get; }
+    public int ID { get; set; }
     public string Url { get; }
     private HttpClient client = new();
 
@@ -27,23 +27,28 @@ public class HttpRpcOtherNode : INode
         await client.PostAsJsonAsync(Url + "StopAsync", "");
     }
 
-    public Task RequestVoteAsync(RequestVoteDTO request)
+    public async Task RequestVoteAsync(RequestVoteDTO request)
     {
-        throw new NotImplementedException();
+        await client.PostAsJsonAsync(Url + "RequestVote", request);
     }
 
-    public Task ReciveVoteAsync(ReceiveVoteDTO ballet)
+    public async Task ReceiveVoteAsync(ReceiveVoteDTO ballet)
     {
-        throw new NotImplementedException();
+        await client.PostAsJsonAsync(Url + "ReceiveVote", ballet);
     }
 
-    public Task ConfirmAsync(ConfirmationDTO info)
+    public async Task ConfirmAsync(ConfirmationDTO info)
     {
-        throw new NotImplementedException();
+        await client.PostAsJsonAsync(Url + "Confirm", info);
     }
 
-    public Task HBRecivedAsync(int reciverId)
+    public async Task HBReceivedAsync(int reciverId)
     {
-        throw new NotImplementedException();
+        await client.PostAsJsonAsync(Url + "HBReceived", reciverId);
     }
+
+	public async Task ClientRequestAsync(string value)
+	{
+        await client.PostAsJsonAsync(Url + "ClientRequest", value);
+	}
 }

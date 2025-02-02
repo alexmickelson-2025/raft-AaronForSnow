@@ -34,9 +34,9 @@ public class SimulationNode : IServerAaron
         return ((IServerAaron)InnerNode).ClientRequestAsync(value);
     }
 
-	public Task HBRecivedAsync(int reciverId)
+	public Task HBReceivedAsync(int reciverId)
 	{
-		return ((IServerAaron)InnerNode).HBRecivedAsync(reciverId);
+		return ((IServerAaron)InnerNode).HBReceivedAsync(reciverId);
 	}
 
 	public Task StopAsync()
@@ -59,8 +59,8 @@ public class SimulationNode : IServerAaron
 		return ((IServerAaron)InnerNode).ConfirmAsync(confirm);
 	}
 
-	public Task ReciveVoteAsync(ReceiveVoteDTO vote)
+	public Task ReceiveVoteAsync(ReceiveVoteDTO vote)
 	{
-		return ((IServerAaron)InnerNode).ReciveVoteAsync(vote);
+		return ((IServerAaron)InnerNode).ReceiveVoteAsync(vote);
 	}
 }
