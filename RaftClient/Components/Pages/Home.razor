@@ -12,7 +12,7 @@ Welcome to your new app.
 }
 @code {
     HttpClient http = new HttpClient();
-    string[] Urls = Environment.GetEnvironmentVariable("NODE_URLS").Split(',',';');
+    using System.ComponentModel.DataAnnotations.Schema;
+    string[] Urls = Environment.GetEnvironmentVariable("NODE_URLS").Split(',');
     
 }
-    using System.ComponentModel.DataAnnotations.Schema;
