@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSimUserInterface", "WebS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIRaft", "APIRaft\APIRaft.csproj", "{AD84BC0F-2DA6-4B65-B6EB-7C67CCF5D54C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaftClient", "RaftClient\RaftClient.csproj", "{7FA0DC03-CB8D-4AD1-9695-07AD86674BF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{AD84BC0F-2DA6-4B65-B6EB-7C67CCF5D54C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD84BC0F-2DA6-4B65-B6EB-7C67CCF5D54C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD84BC0F-2DA6-4B65-B6EB-7C67CCF5D54C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FA0DC03-CB8D-4AD1-9695-07AD86674BF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FA0DC03-CB8D-4AD1-9695-07AD86674BF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FA0DC03-CB8D-4AD1-9695-07AD86674BF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FA0DC03-CB8D-4AD1-9695-07AD86674BF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
