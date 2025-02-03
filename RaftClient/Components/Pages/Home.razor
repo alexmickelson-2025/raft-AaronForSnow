@@ -1,7 +1,18 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+
 
 <PageTitle>Home</PageTitle>
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+@foreach ( var s in Urls){
+    <div>@s</div>
+}
+@code {
+    HttpClient http = new HttpClient();
+    string[] Urls = Environment.GetEnvironmentVariable("NODE_URLS").Split(',',';');
+    
+}
+    using System.ComponentModel.DataAnnotations.Schema;
