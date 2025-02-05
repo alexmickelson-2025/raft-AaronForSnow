@@ -1,5 +1,7 @@
 ﻿@page "/"
 @rendermode InteractiveServer
+@using RaftClassLib
+@using System.Collections.Concurrent
 
 
 <PageTitle>Home</PageTitle>
@@ -10,9 +12,44 @@ Welcome to your new app.
 @foreach ( var s in Urls){
     <div>@s</div>
 }
+@foreach (var node in data){
+    <ul>
+        <li>@node.Value.id</li>
+        <li>@node.Value.electionTimeout</li>
+        <li>@node.Value.state</li>
+        <li>@node.Value.status</li>
+    </ul>
+}
 @code {
     HttpClient http = new HttpClient();
-    using System.ComponentModel.DataAnnotations.Schema;
     string[] Urls = Environment.GetEnvironmentVariable("NODE_URLS").Split(',');
+    ConcurrentDictionary<string,NodeData> data = new();
+
+    protected override void OnInitialized(){
+        Timer timer= new Timer(async _ => 
+        {
+            await Task.WhenAll(
+                Urls.Select(async url => 
+                {
+                    try 
+                    {
+                        var nodeData = await http.GetFromJsonAsync<NodeData>(url + "/nodeData");
+                        if (nodeData != null)
+                        {
+                            data[url] = nodeData;
+                        }
+                        else
+                            Console.WriteLine("did not get data for " + url);        
+                    }
+                    catch (HttpRequestException)
+                    {
+                        Console.WriteLine($"node {url} is down");
+                        data.TryRemove(url, out var removedNodeData);
+                    }
+                }
+            ).ToArray());
+            await InvokeAsync(StateHasChanged);
+        }, null,0, 200);
+    }
     
 }
