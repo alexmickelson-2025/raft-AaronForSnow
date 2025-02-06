@@ -14,41 +14,83 @@ public class HttpRpcOtherNode : IServerAaron
 
     public async Task AppendEntriesAsync(AppendEntry Entry)
     {
-        await client.PostAsJsonAsync(Url + "AppendEntries", Entry);
+        try {
+
+        await client.PostAsJsonAsync(Url + "/AppendEntries", Entry);
+        }
+        catch {
+            Console.WriteLine($"AppentEntry failed for node{ID}");
+        }
     }
 
     public async Task StartSimAsync()
     {
-        await client.PostAsJsonAsync(Url + "StartSim", "");
+        try {
+        await client.PostAsJsonAsync(Url + "/StartSim", "");
+        }
+        catch {
+            Console.WriteLine($"StartSimAsync failed for node{ID}");
+        }
     }
 
     public async Task StopAsync()
     {
-        await client.PostAsJsonAsync(Url + "StopAsync", "");
+        try {
+        await client.PostAsJsonAsync(Url + "/StopAsync", "");
+        }
+        catch {
+            Console.WriteLine($"StopAsync failed for node{ID}");
+        }
     }
 
     public async Task RequestVoteAsync(RequestVoteDTO request)
     {
-        await client.PostAsJsonAsync(Url + "RequestVote", request);
+        try {
+            await client.PostAsJsonAsync(Url + "/RequestVote", request);
+        }
+        catch {
+            Console.WriteLine($"RequestVote failed for node{ID}");
+
+        }
     }
 
     public async Task ReceiveVoteAsync(ReceiveVoteDTO ballet)
     {
-        await client.PostAsJsonAsync(Url + "ReceiveVote", ballet);
+        try {
+            await client.PostAsJsonAsync(Url + "/ReceiveVote", ballet);
+        }
+        catch {
+            Console.WriteLine($"ReceiveVote failed for node{ID}");
+        }
     }
 
     public async Task ConfirmAsync(ConfirmationDTO info)
     {
-        await client.PostAsJsonAsync(Url + "Confirm", info);
+        try {
+        await client.PostAsJsonAsync(Url + "/Confirm", info);
+        }
+        catch {
+            Console.WriteLine($"Confirm failed for node{ID}");
+        }
     }
 
     public async Task HBReceivedAsync(int reciverId)
     {
-        await client.PostAsJsonAsync(Url + "HBReceived", reciverId);
+        try {
+            await client.PostAsJsonAsync(Url + "/HBReceived", reciverId);
+        }
+        catch {
+            Console.WriteLine($"HBReceived failed for node{ID}");
+        }
     }
 
 	public async Task ClientRequestAsync(string value)
 	{
-        await client.PostAsJsonAsync(Url + "ClientRequest", value);
+        try {
+            await client.PostAsJsonAsync(Url + "/ClientRequest", value);
+        }
+        catch {
+            Console.WriteLine($"ClientRequest failed for node{ID}");
+        }
 	}
 }
