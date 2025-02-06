@@ -7,23 +7,23 @@
 <PageTitle>Home</PageTitle>
 
 <h1>Hello, world!</h1>
-
-Welcome to your new app.
+<div><label>Times Timer Ran: </label>@countTimer</div>
 @foreach ( var s in Urls){
     <div>@s</div>
 }
 @foreach (var node in data){
     <ul>
-        <li>@node.Value.id</li>
-        <li>@node.Value.electionTimeout</li>
-        <li>@node.Value.state</li>
-        <li>@node.Value.status</li>
+        <li><label>Id: </label>@node.Value.id</li>
+        <li><label>Election timeout: </label>@node.Value.electionTimeout</li>
+        <li><label>Server state: </label>@node.Value.state</li>
+        <li><label>Is Alive: </label>@node.Value.status</li>
     </ul>
 }
 @code {
     HttpClient http = new HttpClient();
     string[] Urls = Environment.GetEnvironmentVariable("NODE_URLS").Split(',');
     ConcurrentDictionary<string,NodeData> data = new();
+    int countTimer = 0;
 
     protected override void OnInitialized(){
         Timer timer= new Timer(async _ => 
@@ -48,6 +48,7 @@ Welcome to your new app.
                     }
                 }
             ).ToArray());
+            countTimer++;
             await InvokeAsync(StateHasChanged);
         }, null,0, 200);
     }
