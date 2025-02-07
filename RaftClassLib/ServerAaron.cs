@@ -56,7 +56,7 @@ public class ServerAaron : IServerAaron
 		ElectionTimer.Elapsed += async (sender, e) => await StartElection(sender,e);
 		ElectionTimer.AutoReset = true;
 		ElectionTimer.Start();
-		HBTimer = new Timer(50);
+		HBTimer = new Timer(50 * ElectionTimeoutMultiplier);
         HBTimer.Elapsed += async (sender, e) => await sendHeartBeet(sender, e);
 		HBTimer.AutoReset = true;
         HBTimer.Start();
@@ -146,26 +146,26 @@ public class ServerAaron : IServerAaron
     {
         if (!IsLive) { return; }
         await PosibleDelay();
-        IServerAaron sender = OtherServers.FirstOrDefault(s => s.ID == Entry.senderID) ?? new ServerAaron(-1);
-        if (Entry.entry == "HB" && Entry.term >= Term && Entry.commitedIndex >= commitIndex)
+        IServerAaron sender = OtherServers.FirstOrDefault(s => s.ID == Entry.SenderID) ?? new ServerAaron(-1);
+        if (Entry.Entry == "HB" && Entry.Term >= Term && Entry.CommitedIndex >= commitIndex)
 		{
-			if (Entry.term == Term || Entry.term == Term +1 && Entry.nextIndex == Log.Count) // it should be a valid heart beat
+			if (Entry.Term == Term || Entry.Term == Term +1 && Entry.NextIndex == Log.Count) // it should be a valid heart beat
             {
-                await CheckCommitedIndexAsync(Entry.commitedIndex);
+                await CheckCommitedIndexAsync(Entry.CommitedIndex);
             }
 			await respondToHeartBeet(Entry, sender);
 		}
-		if (Entry.entry == "REQUEST COMMIT INDEX" && State == ServerState.Follower)
+		if (Entry.Entry == "REQUEST COMMIT INDEX" && State == ServerState.Follower)
         {
             var message = new AppendEntry(ID, "COMMIT INDEX RESPONCE", Term, Operation.None, commitIndex, new List<LogEntry>() , Log.Count);
             await sender.AppendEntriesAsync(message);
         }
-        else if (Entry.entry == "COMMIT INDEX RESPONCE" && State == ServerState.Leader)
+        else if (Entry.Entry == "COMMIT INDEX RESPONCE" && State == ServerState.Leader)
 		{
-			int indexInIndexes = getServerPositionInNextIndexes(Entry.senderID);
-			nextIndexes[indexInIndexes] = Entry.nextIndex;
+			int indexInIndexes = getServerPositionInNextIndexes(Entry.SenderID);
+			nextIndexes[indexInIndexes] = Entry.NextIndex;
 		}
-		else if (Entry.term >= Term)
+		else if (Entry.Term >= Term)
 		{
 			await acceptNormalAppendEntrie(Entry, sender);
 		}
@@ -190,17 +190,17 @@ public class ServerAaron : IServerAaron
 
 	private async Task acceptNormalAppendEntrie(AppendEntry Entry, IServerAaron sender)
 	{
-		LeaderId = Entry.senderID;
+		LeaderId = Entry.SenderID;
 		State = ServerState.Follower;
 		//SelfLog("AppendReceived", Entry.command, Entry.term);
 		resetElectionTimer();
 		if (sender.ID != -1)
-		{ await sender.ConfirmAsync(new ConfirmationDTO(Entry.term, ID)); }
+		{ await sender.ConfirmAsync(new ConfirmationDTO(Entry.Term, ID)); }
 	}
 
 	private async Task respondToHeartBeet(AppendEntry Entry, IServerAaron sender)
 	{
-		LeaderId = Entry.senderID;
+		LeaderId = Entry.SenderID;
 		resetElectionTimer();
 		if (sender.ID != -1)
 			await sender.HBReceivedAsync(ID);
@@ -293,7 +293,7 @@ public class ServerAaron : IServerAaron
 				if (count >= OtherServers.Count / 2 && Log.Count > commitIndex + 1)
 				{
 					++commitIndex;
-					StateMachineDataBucket += Log[commitIndex].uniqueValue;
+					StateMachineDataBucket += Log[commitIndex].UniqueValue;
 					await CheckCommitedIndexAsync();
                     
 				}
@@ -302,7 +302,7 @@ public class ServerAaron : IServerAaron
                 if (commitIndex < expectedCommitIndex && Log.Count > commitIndex + 1)
                 {
 					++commitIndex;
-                    StateMachineDataBucket += Log[commitIndex].uniqueValue;
+                    StateMachineDataBucket += Log[commitIndex].UniqueValue;
                     await CheckCommitedIndexAsync(expectedCommitIndex);
 				}
                 break;

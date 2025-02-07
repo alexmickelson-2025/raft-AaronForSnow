@@ -27,10 +27,10 @@ public class LoggingTests
 		Thread.Sleep(65);
 		await testServer.StopAsync();
 		LogEntry entry = new LogEntry(1, Operation.Default, "my request");
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "HB"));
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.newLogs.Count == 1));
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.term == 1)); 
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.newLogs[0] == entry)); 
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.Entry == "HB"));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.NewLogs.Count == 1));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.Term == 1)); 
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.NewLogs[0] == entry)); 
 	}
 	// 2. when a leader receives a command from the client, it is appended to its log
 	[Fact]
@@ -45,7 +45,7 @@ public class LoggingTests
 		await testServer.ClientRequestAsync("my request for This Test");
 		await testServer.StopAsync();
 		LogEntry entry = new LogEntry(1, Operation.Default, "my request for This Test");
-		Assert.Equal("my request for This Test", testServer.Log[0].uniqueValue);
+		Assert.Equal("my request for This Test", testServer.Log[0].UniqueValue);
 	}
 	// 3. when a node is new, its log is empty]
 	[Fact]
@@ -78,13 +78,13 @@ public class LoggingTests
 		await testServer.AppendEntriesAsync(new AppendEntry(1, "COMMIT INDEX RESPONCE", 3, Operation.None, 3, new List<LogEntry>(), 4));
 		Thread.Sleep(65); //so it sends at next heart beat
 		await testServer.StopAsync();
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.commitedIndex == 3));
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.term == 3));
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "HB"));
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.nextIndex == 5));
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.newLogs.Count == 1));
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.newLogs[0].Term == 2));
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.newLogs[0].uniqueValue == "fith"));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.CommitedIndex == 3));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.Term == 3));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.Entry == "HB"));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.NextIndex == 5));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.NewLogs.Count == 1));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.NewLogs[0].Term == 2));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.NewLogs[0].UniqueValue == "fith"));
 
 	}
 	[Fact]
@@ -114,7 +114,7 @@ public class LoggingTests
 		await testServer.ReciveVoteAsync(1, true);
 		await testServer.ReciveVoteAsync(2, true);
 		Assert.Equal(ServerState.Leader, testServer.State);
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "REQUEST COMMIT INDEX"));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.Entry == "REQUEST COMMIT INDEX"));
 	}
 	[Fact]
 	public async Task RespondsToCommitIndexRequest()
@@ -127,9 +127,9 @@ public class LoggingTests
 		testServer.commitIndex = 1;
 		await testServer.AppendEntriesAsync(new AppendEntry(1, "REQUEST COMMIT INDEX", 2, Operation.None, 3, new List<LogEntry>(), 0));
 		//fake1.Received(1).AppendEntries(new AppendEntry(3, "COMMIT INDEX RESPONCE", 2, Operation.None, 1, new List<LogEntry>(), 1));
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.commitedIndex == 1));
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.nextIndex == 1));
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "COMMIT INDEX RESPONCE"));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.CommitedIndex == 1));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.NextIndex == 1));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.Entry == "COMMIT INDEX RESPONCE"));
 	}
 	// 5. leaders maintain an "nextIndex" for each follower that is the index of the next log entry the leader will send to that follower
 	[Fact]
@@ -150,7 +150,7 @@ public class LoggingTests
 		await testServer.StartSimAsync();
 		testServer.State = ServerState.Leader;
 		Thread.Sleep(60);
-		await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.commitedIndex == -1));//none, commited yet
+		await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.CommitedIndex == -1));//none, commited yet
 	}
 	// 7. entry index  //I assume this is the next index. the index of the next expected entry. It will be the entry you should expect if you add the list given in the append entry
 	[Fact]
@@ -162,7 +162,7 @@ public class LoggingTests
 		await testServer.StartSimAsync();
 		testServer.State = ServerState.Leader;
 		Thread.Sleep(60);
-		await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.nextIndex == 0));//none, commited yet
+		await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.NextIndex == 0));//none, commited yet
 	}
 	// 8. when a leader receives a majority responses from the clients after a log replication heartbeat,
 	//		the leader sends a confirmation response to the client

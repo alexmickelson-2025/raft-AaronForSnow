@@ -35,7 +35,7 @@ public class ElectionTests
         await Task.Delay(50);
         //Thread.Sleep(65);
         await fake1.Received().AppendEntriesAsync(Arg.Any<AppendEntry>());
-        await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "HB"));
+        await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.Entry == "HB"));
 	}
     //  2. When a node receives an AppendEntries from another node, then first node remembers that other node is the current leader.
     [Fact]
@@ -308,7 +308,7 @@ public class ElectionTests
         await testServer.StopAsync();
         Assert.Equal(ServerState.Follower, testServer.State);
         Assert.Equal(1, testServer.LeaderId);
-        await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "Leader is 1"));
+        await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.Entry == "Leader is 1"));
     }
     // 19. When a candidate wins an election, it immediately sends a heart beat.
     [Fact]
@@ -323,7 +323,7 @@ public class ElectionTests
 		Tools.SleepElectionTimeoutBuffer(testServer);
         await testServer.ReciveVoteAsync(senderID: 3, true);
         Assert.Equal(ServerState.Leader, testServer.State);
-        await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "HB"));
+        await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.Entry == "HB"));
     }
 }
 // use NSubstitute to moq the other servers

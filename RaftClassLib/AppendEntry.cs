@@ -16,11 +16,11 @@ public class AppendEntryOld
 	public List<LogEntry> newLogs { get; set; } = new List<LogEntry>();
 }
 public record AppendEntry (
-	int senderID,
-	string entry, 
-	int term,
-	Operation command,
-	int commitedIndex,
-	List<LogEntry> newLogs,
-	int nextIndex = 0
+	int SenderID,
+	string Entry, 
+	int Term,
+	Operation Command,
+	int CommitedIndex,
+	List<LogEntry> NewLogs,
+	int NextIndex = 0
 	);

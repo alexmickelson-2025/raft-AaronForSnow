@@ -46,7 +46,7 @@ public class WebDelayTests
         await fake1.Received(0).AppendEntriesAsync(Arg.Any<AppendEntry>());
         await testServer.StartSimAsync();
         Thread.Sleep(65);
-        await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "HB"));
+        await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.Entry == "HB"));
     }
     // When a folloewer gets paused, it does not time out to become a cadidate
     [Fact]

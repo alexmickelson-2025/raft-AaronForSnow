@@ -64,7 +64,7 @@ Welcome to your new app.
 				<li><label>CommitIndex: </label>@node.commitIndex</li>
 				@for (int i = 0;i < node.Log.Count; i++)
 				{
-					<div>Entry: @node.Log[i].uniqueValue</div>
+					<div>Entry: @node.Log[i].UniqueValue</div>
 					<div>Index: @i</div>
 					<div>Commited: @if (i <= node.commitIndex)
 						{

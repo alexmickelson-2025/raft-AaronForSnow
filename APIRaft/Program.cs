@@ -50,6 +50,7 @@ var node = new ServerAaron(int.Parse(nodeId))
 {
     OtherServers = otherNodes.ToList(),
     NetworkDelayModifier = 50,
+    ElectionTimeoutMultiplier = 50,
 };
 
 //RaftNode.NodeIntervalScalar = double.Parse(nodeIntervalScalarRaw);

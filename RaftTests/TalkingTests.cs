@@ -61,7 +61,7 @@ public class TalkingTests
         Thread.Sleep(65);
         defaultEntry = new AppendEntry(1, "HB", 0, Operation.Default, 0, new List<LogEntry>());
 
-		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.entry == "HB"));
+		await fake1.Received(1).AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.Entry == "HB"));
     }
     //  1. When a leader is active it sends a heart beat within 50ms.
     [Fact]

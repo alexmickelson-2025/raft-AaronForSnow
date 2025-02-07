@@ -8,6 +8,6 @@ namespace RaftClassLib;
 
 public record LogEntry (int Term,
     Operation Command = Operation.None,
-    string uniqueValue = "none" );
+    string UniqueValue = "none" );
 
 
