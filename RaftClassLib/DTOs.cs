@@ -8,10 +8,10 @@ namespace RaftClassLib;
 
 public record RequestVoteDTO
 {
-	public RequestVoteDTO(int requsterId, int term)
+	public RequestVoteDTO(int RequesterId, int Term)
 	{
-		RequesterId = requsterId;
-		Term = term;
+		this.RequesterId = RequesterId;
+		this.Term = Term;
 	}
 	public int RequesterId { get; }
 	public int Term { get; }

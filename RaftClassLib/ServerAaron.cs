@@ -195,7 +195,7 @@ public class ServerAaron : IServerAaron
 		//SelfLog("AppendReceived", Entry.command, Entry.term);
 		resetElectionTimer();
 		if (sender.ID != -1)
-		{ await sender.ConfirmAsync(new ConfirmationDTO(Entry.Term, ID)); }
+		{ await sender.ConfirmAsync(new ConfirmationDTO(Entry.Term, ID, Log.Count -1)); }
 	}
 
 	private async Task respondToHeartBeet(AppendEntry Entry, IServerAaron sender)
