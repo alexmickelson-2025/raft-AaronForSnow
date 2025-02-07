@@ -76,9 +76,8 @@ public class HttpRpcOtherNode : IServerAaron
 
     public async Task HBReceivedAsync(int ReceiverId)
     {
-        string id = ReceiverId.ToString();
         try {
-            await client.PostAsJsonAsync(Url + "/HBReceived", id);
+            await client.PostAsJsonAsync(Url + $"/HBReceived/" + ReceiverId, "");
         }
         catch {
             Console.WriteLine($"HBReceived failed for node{ID}");
@@ -88,7 +87,7 @@ public class HttpRpcOtherNode : IServerAaron
 	public async Task ClientRequestAsync(string value)
 	{
         try {
-            await client.PostAsJsonAsync(Url + "/ClientRequest", value);
+            await client.PostAsJsonAsync(Url + "/ClientRequest/" + value , "");
         }
         catch {
             Console.WriteLine($"ClientRequest failed for node{ID}");
