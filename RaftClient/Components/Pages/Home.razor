@@ -17,6 +17,15 @@
         <li><label>Election timeout: </label>@node.Value.ElectionTimeout</li>
         <li><label>Server state: </label>@node.Value.State</li>
         <li><label>Is Alive: </label>@node.Value.Status</li>
+        <li><label>Leader Id: </label>@node.Value.CurrentTermLeader</li>
+        <li><label>CommitedEntry Index: </label>@node.Value.CommittedEntryIndex</li>
+        <li><label>Log: </label>
+        <ul>
+            @foreach(var entry in node.Value.Log){
+                <li>@entry</li>
+            }
+        </ul>
+        </li>
     </ul>
 }
 @code {
