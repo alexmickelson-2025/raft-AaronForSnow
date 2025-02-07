@@ -310,7 +310,7 @@ public class ServerAaron : IServerAaron
     }
 
 
-	public async Task HBReceivedAsync(int reciverId)
+	public async Task HBReceivedAsync(int ReceiverId)
     {
         await PosibleDelay();
         await Task.CompletedTask;
