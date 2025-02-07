@@ -95,9 +95,9 @@ app.MapPost("/Confirm", async (ConfirmationDTO confirm) =>
     logger.LogInformation("received confirmation {confirmaiton}", confirm);
     await node.ConfirmAsync(confirm);
 });
-app.MapPost("/HBReceived", async (int receiverId) => {
-    logger.LogInformation("received Heart Beat from {receiverId}", receiverId );
-    await node.HBReceivedAsync(receiverId);
+app.MapPost("/HBReceived", async (int ReceiverId) => {
+    logger.LogInformation("received Heart Beat from {receiverId}", ReceiverId );
+    await node.HBReceivedAsync(ReceiverId);
 });
 app.MapPost("/ReceiveVote", async (ReceiveVoteDTO ballet) => {
     logger.LogInformation("received vote ballet {ballet}", ballet);

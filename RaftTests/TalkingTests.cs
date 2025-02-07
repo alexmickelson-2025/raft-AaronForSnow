@@ -20,7 +20,7 @@ public class TalkingTests
 		defaultEntry = new AppendEntry(1, "HB", 2, Operation.None, 0, new List<LogEntry>());
 		defaultEntry = new AppendEntry(1, "anything not HB", 2, Operation.None, 0, new List<LogEntry>());
 		await testServer.AppendEntriesAsync(defaultEntry);
-        await fake1.Received(1).ConfirmAsync(new ConfirmationDTO(2, 3)); //term 2 from server 3
+        await fake1.Received(1).ConfirmAsync(new ConfirmationDTO(2, 3, 0)); //term 2 from server 3
     }
     [Fact]
     public async Task FollowerRespondsToVoteRequestPositive()
@@ -91,7 +91,7 @@ public class TalkingTests
 		await testServer.AppendEntriesAsync(defaultEntry);
         //fake1.Received(0).Confirm(2, 3);
         Thread.Sleep(350);
-        await fake1.Received(1).ConfirmAsync(new ConfirmationDTO(2, 3));
+        await fake1.Received(1).ConfirmAsync(new ConfirmationDTO(2, 3,0));
     }
     //  9. Given a candidate receives a majority of votes while waiting for unresponsive node, it still becomes a leader.
     [Fact]

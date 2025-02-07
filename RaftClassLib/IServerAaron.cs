@@ -9,7 +9,7 @@
         Task StopAsync();
         Task RequestVoteAsync(RequestVoteDTO request);
         Task ConfirmAsync(ConfirmationDTO confirm);
-		Task HBReceivedAsync(int reciverId);
+		Task HBReceivedAsync(int ReceiverId);
         Task ReceiveVoteAsync(ReceiveVoteDTO vote);
 		Task StartSimAsync();
         Task ClientRequestAsync(string value);
