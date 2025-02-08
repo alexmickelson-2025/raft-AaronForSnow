@@ -171,7 +171,7 @@ public class ServerAaron : IServerAaron
 			int indexInIndexes = getServerPositionInNextIndexes(Entry.SenderID);
 			nextIndexes[indexInIndexes] = Entry.NextIndex;
 		}
-		else
+		else if (!Entry.Entry.Contains("Leader is"))
         {
 			var message = new AppendEntry(ID, $"Leader is {LeaderId}", Term, Operation.None, commitIndex, new List<LogEntry>(), Log.Count);
 			await sender.AppendEntriesAsync(message);

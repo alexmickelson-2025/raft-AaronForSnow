@@ -74,17 +74,18 @@ app.MapGet("/nodeData", () =>
 });
 
 app.MapPost("/AppendEntries", async (AppendEntry Entry) => {
-    //logger.LogInformation("received append entries {Entry}", Entry);
+    logger.LogInformation("received append entries {Entry}", Entry);
     await node.AppendEntriesAsync(Entry);
 });
-app.MapPost("/StartSim", async (string junk) =>
+app.MapPost("/StartSim/{junk}", async (string junk) =>
 {
     logger.LogInformation("received StartSim for node {nodeId}", node.ID);
 	await node.StartSimAsync();
 });
-app.MapPost("/StopAsync", async (string junk) =>
+app.MapPost("/StopAsync/{junk}", async (string junk) =>
 {
-    await node.StopAsync();
+	logger.LogInformation("received Stop Request for node {nodeId}", node.ID);
+	await node.StopAsync();
 });
 app.MapPost("/RequestVote", async (RequestVoteDTO vote) => {
 	logger.LogInformation("received vote Request {vote}", vote);

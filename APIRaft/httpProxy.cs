@@ -26,7 +26,7 @@ public class HttpRpcOtherNode : IServerAaron
     public async Task StartSimAsync()
     {
         try {
-        await client.PostAsJsonAsync(Url + "/StartSim", "");
+        await client.PostAsJsonAsync(Url + "/StartSim/", "");
         }
         catch {
             Console.WriteLine($"StartSimAsync failed for node{ID}");
@@ -36,7 +36,7 @@ public class HttpRpcOtherNode : IServerAaron
     public async Task StopAsync()
     {
         try {
-        await client.PostAsJsonAsync(Url + "/StopAsync", "");
+        await client.PostAsJsonAsync(Url + "/StopAsync/", "");
         }
         catch {
             Console.WriteLine($"StopAsync failed for node{ID}");

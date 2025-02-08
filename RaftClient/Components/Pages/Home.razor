@@ -79,11 +79,11 @@
 
             if (node.Status)
             {
-                await http.PostAsJsonAsync(Url + "/StopAsync", "");
+                await http.PostAsJsonAsync(Url + "/StopAsync/", "");
             }
             else
             {
-                await http.PostAsJsonAsync(Url + "/StartSim", "");
+                await http.PostAsJsonAsync(Url + "/StartSim/", "");
             }
         }
         catch (HttpRequestException)
