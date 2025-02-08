@@ -77,11 +77,12 @@ public class ServerAaron : IServerAaron
             {
 				int indexInIndexes = getServerPositionInNextIndexes(server.ID);
 				List<LogEntry> newEntries = new List<LogEntry>();
+                AppendEntry ent;
 				for (int i = nextIndexes[indexInIndexes]; i < Log.Count; i++)
 				{
 					newEntries.Add(Log[i]);
 				}
-				AppendEntry ent = new AppendEntry(ID, "HB", Term, Operation.Default, commitIndex, newEntries, Log.Count);
+				ent = new AppendEntry(ID, "HB", Term, Operation.Default, commitIndex, newEntries, Log.Count);
                 await server.AppendEntriesAsync(ent);
             }
         }
@@ -151,9 +152,14 @@ public class ServerAaron : IServerAaron
 		{
 			if (Entry.Term == Term || Entry.Term == Term +1 && Entry.NextIndex == Log.Count) // it should be a valid heart beat
             {
+                foreach (LogEntry l in Entry.NewLogs)
+                {
+                    Log.Add(l);
+					await sender.ConfirmAsync(new ConfirmationDTO(l.Term, ID, Log.Count - 1));
+				}
                 await CheckCommitedIndexAsync(Entry.CommitedIndex);
             }
-			await respondToHeartBeet(Entry, sender);
+			await respondToHeartBeet(sender);
 		}
 		if (Entry.Entry == "REQUEST COMMIT INDEX" && State == ServerState.Follower)
         {
@@ -164,10 +170,6 @@ public class ServerAaron : IServerAaron
 		{
 			int indexInIndexes = getServerPositionInNextIndexes(Entry.SenderID);
 			nextIndexes[indexInIndexes] = Entry.NextIndex;
-		}
-		else if (Entry.Term >= Term)
-		{
-			await acceptNormalAppendEntrie(Entry, sender);
 		}
 		else
         {
@@ -188,19 +190,9 @@ public class ServerAaron : IServerAaron
 		return indexInIndexes;
 	}
 
-	private async Task acceptNormalAppendEntrie(AppendEntry Entry, IServerAaron sender)
+	private async Task respondToHeartBeet( IServerAaron sender)
 	{
-		LeaderId = Entry.SenderID;
-		State = ServerState.Follower;
-		//SelfLog("AppendReceived", Entry.command, Entry.term);
-		resetElectionTimer();
-		if (sender.ID != -1)
-		{ await sender.ConfirmAsync(new ConfirmationDTO(Entry.Term, ID, Log.Count -1)); }
-	}
-
-	private async Task respondToHeartBeet(AppendEntry Entry, IServerAaron sender)
-	{
-		LeaderId = Entry.SenderID;
+		LeaderId = sender.ID;
 		resetElectionTimer();
 		if (sender.ID != -1)
 			await sender.HBReceivedAsync(ID);
@@ -240,7 +232,7 @@ public class ServerAaron : IServerAaron
 		IServerAaron sender = OtherServers.FirstOrDefault(s => s.ID == requesterId) ?? new ServerAaron(-1);
 		if (termVotedId == requesterId) //Repeted Vote
         {
-            return;
+			await sender.ReceiveVoteAsync(new ReceiveVoteDTO(ID, true));
         }
         else if (termVotedId != requesterId && termVotedId != 0)
         {
