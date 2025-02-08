@@ -74,7 +74,7 @@ app.MapGet("/nodeData", () =>
 });
 
 app.MapPost("/AppendEntries", async (AppendEntry Entry) => {
-    logger.LogInformation("received append entries {Entry}", Entry);
+    //logger.LogInformation("received append entries {Entry}", Entry);
     await node.AppendEntriesAsync(Entry);
 });
 app.MapPost("/StartSim/{junk}", async (string junk) =>
