@@ -60,4 +60,5 @@ public class LogTests
 		await testServer.AppendEntriesAsync(new AppendEntry(1, "HB", 1, Operation.Default, 0, new List<LogEntry>() { new LogEntry(1, Operation.Default, "test request from client") }, 1));
 		await fake1.Received().ConfirmAsync(new ConfirmationDTO(1,3,0));
 	}
+	
 }
