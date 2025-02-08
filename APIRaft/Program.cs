@@ -74,7 +74,7 @@ app.MapGet("/nodeData", () =>
 });
 
 app.MapPost("/AppendEntries", async (AppendEntry Entry) => {
-    logger.LogInformation("received append entries {Entry}", Entry);
+    //logger.LogInformation("received append entries {Entry}", Entry);
     await node.AppendEntriesAsync(Entry);
 });
 app.MapPost("/StartSim", async (string junk) =>
@@ -96,7 +96,7 @@ app.MapPost("/Confirm", async (ConfirmationDTO confirm) =>
     await node.ConfirmAsync(confirm);
 });
 app.MapPost("/HBReceived/{ReceiverId}", async (int ReceiverId) => {
-    logger.LogInformation("node {receiverId} recieved Heart Beat", ReceiverId );
+    //logger.LogInformation("node {receiverId} recieved Heart Beat", ReceiverId );
     await node.HBReceivedAsync(ReceiverId);
 });
 app.MapPost("/ReceiveVote", async (ReceiveVoteDTO ballet) => {
