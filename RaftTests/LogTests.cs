@@ -57,9 +57,7 @@ public class LogTests
 		Tools.SetUpThreeServers(out fake1, out testServer);
 		await testServer.StartSimAsync();
 		Assert.Empty(testServer.Log);
-		await testServer.AppendEntriesAsync(new AppendEntry(1, "HB", 2, Operation.Default, 0, new List<LogEntry>()));
-		await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.SenderID == 3));
-		await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.NewLogs.Count == 1));
-		await fake1.Received().AppendEntriesAsync(Arg.Is<AppendEntry>(e => e.NewLogs[0] == new LogEntry(1, Operation.Default, "test request from client")));
+		await testServer.AppendEntriesAsync(new AppendEntry(1, "HB", 1, Operation.Default, 0, new List<LogEntry>() { new LogEntry(1, Operation.Default, "test request from client") }, 1));
+		await fake1.Received().ConfirmAsync(new ConfirmationDTO(1,3,0));
 	}
 }
