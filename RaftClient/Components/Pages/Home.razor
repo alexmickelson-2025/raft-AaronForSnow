@@ -31,6 +31,7 @@
             <button @onclick="async () => {await sentClientRequest(node.Key);}">Send</button>
         </li>
         <li><label>Id: </label>@node.Value.Id</li>
+        <li><label>Term: </label>@node.Value.Term</li>
         <li><label>Election timeout: </label>@node.Value.ElectionTimeout</li>
         <li><label>Server state: </label>@node.Value.State</li>
         <li><label>Is Alive: </label>@node.Value.Status</li>
