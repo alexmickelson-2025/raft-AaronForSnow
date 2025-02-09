@@ -69,7 +69,8 @@ app.MapGet("/nodeData", () =>
       CommittedEntryIndex: node.commitIndex,
       Log: node.Log,
       State: node.State,
-      NodeIntervalScalar: node.NetworkDelayModifier
+      NodeIntervalScalar: node.NetworkDelayModifier,
+      StateMachine: node.StateMachineDataBucket
     );
 });
 

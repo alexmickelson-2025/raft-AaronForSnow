@@ -37,6 +37,7 @@
         <li><label>Is Alive: </label>@node.Value.Status</li>
         <li><label>Leader Id: </label>@node.Value.CurrentTermLeader</li>
         <li><label>CommitedEntry Index: </label>@node.Value.CommittedEntryIndex</li>
+        <li><label>State Machine: </label>@node.Value.StateMachine</li>
         <li><label>Log: </label>
             <ul>
                 @foreach(var entry in node.Value.Log){

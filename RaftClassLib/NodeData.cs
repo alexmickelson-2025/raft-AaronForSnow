@@ -10,8 +10,9 @@ public class NodeData
 	public List<LogEntry> Log {get; set;}
 	public ServerState State {get; set;}
 	public int NodeIntervalScalar {get; set;}
+	public string StateMachine { get; set;}
 
-	public NodeData(int Id, bool Status, double ElectionTimeout, int Term, int CurrentTermLeader, int CommittedEntryIndex, List<LogEntry> Log, ServerState State, int NodeIntervalScalar)
+	public NodeData(int Id, bool Status, double ElectionTimeout, int Term, int CurrentTermLeader, int CommittedEntryIndex, List<LogEntry> Log, ServerState State, int NodeIntervalScalar, string StateMachine)
 	{
 		this.Id = Id;
 		this.Status = Status;
@@ -22,5 +23,6 @@ public class NodeData
 		this.Log = Log;
 		this.State = State;
 		this.NodeIntervalScalar = NodeIntervalScalar;
+		this.StateMachine = StateMachine;
 	}
 }
