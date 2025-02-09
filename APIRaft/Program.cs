@@ -54,7 +54,7 @@ var node = new ServerAaron(int.Parse(nodeId))
 };
 
 //RaftNode.NodeIntervalScalar = double.Parse(nodeIntervalScalarRaw);
-await node.StartSimAsync();
+//await node.StartSimAsync();
 
 app.MapGet("/health", () => "healthy");
 

@@ -265,7 +265,7 @@ public class ServerAaron : IServerAaron
 			int count = getNumConfirmedForIndex(indexOfLog);
 			if (count >= OtherServers.Count / 2)
 			{
-				await OtherServers.Where(s => s.ID == reciverId).First().ConfirmAsync(new ConfirmationDTO(term, ID, indexOfLog));
+				await OtherServers.Where(s => s.ID == reciverId).FirstOrDefault().ConfirmAsync(new ConfirmationDTO(term, ID, indexOfLog));
 				await CheckCommitedIndexAsync();
 			}
 		}
@@ -315,6 +315,14 @@ public class ServerAaron : IServerAaron
         {
             Log.Add(new LogEntry(Term, Operation.Default, value));
         }
+        else
+        {
+            try
+            {
+                await OtherServers.Where(s => s.ID == LeaderId).FirstOrDefault()?.ClientRequestAsync(value);
+            }
+            catch { }
+		}
         await Task.CompletedTask;
 	}
 }
